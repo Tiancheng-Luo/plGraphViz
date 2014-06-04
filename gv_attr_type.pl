@@ -41,7 +41,7 @@
   ]
 ).
 :- reexport(
-  gv(gv_color),
+  plGraphViz(gv_color),
   [
     color//1, % +Color:compound
     colorList//1 % +ColorList:list(compound)

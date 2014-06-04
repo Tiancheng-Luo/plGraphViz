@@ -81,7 +81,7 @@ gv_color_url('http://www.graphviz.org/doc/info/colors.html').
 
 gv_color_download:-
   gv_color_url(Url),
-  download_html(Url, Dom, [html_dialect(html4)]),
+  download_html(Url, Dom, [html_dialect(html4),verbose(silent)]),
   xpath(Dom, //table(1), TableDom1),
   xpath(Dom, //table(2), TableDom2),
   maplist(assert_color_table, [x11,svg], [TableDom1,TableDom2]).

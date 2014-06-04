@@ -68,7 +68,7 @@ check_minimum(V, Min1):-
 
 gv_attrs_download:-
   gv_attrs_url(Url),
-  download_html(Url, Dom, [html_dialect(html4)]),
+  download_html(Url, Dom, [html_dialect(html4),verbose(silent)]),
 
   xpath(Dom, //table(@align=center), TableDom),
   % @tbd This does not work, since in `record_name(Element, Name)`,
