@@ -130,7 +130,7 @@ gv_attrs_init:-
 % The persistent store is still fresh.
 gv_attrs_update(Age):-
   once(gv_attr(_, _, _, _, _, _)),
-  Age < 3600, !.
+  Age < 8640000, !.
 % The persistent store has become stale, so refresh it.
 gv_attrs_update(_):-
   retractall_gv_attr(_, _, _, _, _, _),

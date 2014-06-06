@@ -124,7 +124,7 @@ gv_color_init:-
 % The persistent store is still fresh.
 gv_color_update(Age):-
   once(gv_color(_, _)),
-  Age < 3600, !.
+  Age < 8640000, !.
 % The persistent store has become stale, so refresh it.
 gv_color_update(_):-
   retractall_gv_color(_, _),
