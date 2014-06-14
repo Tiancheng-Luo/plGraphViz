@@ -1,7 +1,8 @@
 :- module(
   load_project,
   [
-    load_project/1, % +ChildProjects:list(or([atom,pair(atom)]))
+    load_project/2, % +Parent:atom
+                    % +ChildProjects:list(or([atom,pair(atom)]))
     load_subproject/2, % +ParentFileSearchPath:atom
                        % +Child:or([atom,pair(atom)])
     set_data_subdirectory/1 % +ParentDirectory:atom
@@ -16,19 +17,24 @@ Generic code for loading a project:
   * Load the index of subprojects onto the file search path.
 
 @author Wouter Beek
-@version 2014/05/27
+@version 2014/06/14
 */
 
-:- use_module(library(ansi_term)).
+:- use_module(library(ansi_term)). % Colorized terminal messages.
 :- use_module(library(apply)).
 
+:- dynamic(user:project/2).
+:- multifile(user:project/2).
+:- dynamic(user:project/3).
+:- multifile(user:project/3).
 
 
-load_project(ChildProjects):-
-  user:project(_, _, ParentFsp),
+
+load_project(Parent, ChildProjects):-
+  parent_alias(Parent, ParentFsp),
 
   % Entry point.
-  source_file(load_project(_), ThisFile),
+  source_file(load_project(_,_), ThisFile),
   file_directory_name(ThisFile, ThisDir),
   assert(user:file_search_path(ParentFsp, ThisDir)),
   assert(user:file_search_path(project, ThisDir)),
@@ -38,7 +44,7 @@ load_project(ChildProjects):-
 
   % Load the root of submodules onto the file search path.
   maplist(load_subproject(ParentFsp), ChildProjects),
-  
+
   % Load the index into the file search path.
   load_project_index(ParentFsp).
 
@@ -77,8 +83,20 @@ load_subproject_file_search_path(_, ChildFsp, ChildDir):-
 
 load_project_index(Fsp):-
   Spec =.. [Fsp,index],
-  absolute_file_name(Spec, File, [access(read),file_type(prolog)]),
+  absolute_file_name(
+    Spec,
+    File,
+    [access(read),file_errors(fail),file_type(prolog)]
+  ), !,
   ensure_loaded(File).
+load_project_index(_).
+
+
+%! parent_alias(+Parent:atom, -ParentFsp:atom) is det.
+
+parent_alias(Parent, ParentFsp):-
+  user:project(Parent, _, ParentFsp), !.
+parent_alias(Parent, Parent).
 
 
 %! set_data_subdirectory(+ParentDirectory:atom) is det.
