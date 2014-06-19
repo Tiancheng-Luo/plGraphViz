@@ -1,16 +1,13 @@
 :- module(
   gv_file,
   [
-    graph_to_gv_file/3, % +Options:list(nvpair)
+    gif_to_gv_file/3, % +Options:list(nvpair)
                         % +GraphInterchangeFormat:compound
                         % ?ToFile:atom
     graph_to_svg_dom/3, % +Options:list(nvpair)
                         % +GraphInterchangeFormat:compound
                         % -SvgDom:list(compound)
-    open_dot/1, % +File:file
-    tree_to_gv_file/3 % +Options:list(nvpair)
-                      % +Tree:compound
-                      % ?ToFile:atom
+    open_dot/1 % +File:file
   ]
 ).
 
@@ -81,7 +78,7 @@ user:prolog_file_type(xdot, xdot).
 
 
 
-%! graph_to_gv_file(
+%! gif_to_gv_file(
 %!   +Options:list(nvpair),
 %!   +GIF:compound,
 %!   -ToFile:atom
@@ -99,7 +96,7 @@ user:prolog_file_type(xdot, xdot).
 % @arg GIF A compound term representing a graph.
 % @arg ToFile The atomic name of a file.
 
-graph_to_gv_file(O1, GIF, ToFile):-
+gif_to_gv_file(O1, GIF, ToFile):-
   once(phrase(gv_graph(GIF), Codes)),
   to_gv_file(O1, Codes, ToFile).
 
@@ -117,7 +114,7 @@ graph_to_gv_file(O1, GIF, ToFile):-
 graph_to_svg_dom(O1, GIF, SvgDom):-
   % Make sure the file type of the output file is SvgDom.
   merge_options([to_file_type=svg], O1, O2),
-  graph_to_gv_file(O2, GIF, ToFile),
+  gif_to_gv_file(O2, GIF, ToFile),
   file_to_svg(ToFile, SvgDom),
   safe_delete_file(ToFile).
 
@@ -131,33 +128,6 @@ graph_to_svg_dom(O1, GIF, SvgDom):-
 open_dot(File):-
   once(find_program_by_file_type(dot, Program)),
   run_program(Program, [File]).
-
-
-%! tree_to_gv_file(+Options:list(nvpair), +Tree:compound, ?ToFile:atom) is det.
-% Stores the given tree term into a GraphViz file.
-%
-% The following options are supported:
-%   * =|method(+Method:oneof([dot,sfdp])|=
-%     The algorithm used by GraphViz for positioning the tree nodes.
-%     Either =dot= (default) or =sfdp=.
-%   * =|to_file_type(+FileType:oneof([jpeg,pdf,svg,xdot])|=
-%     The file type of the generated GraphViz file.
-%
-% @arg Options A list of name-value pairs.
-% @arg Tree A compound term representing a tree.
-% @arg ToFile The atomic name of the generated file.
-
-tree_to_gv_file(O1, Tree, ToFile):-
-  once(phrase(gv_tree(O1, Tree), Codes)),
-  to_gv_file(O1, Codes, ToFile).
-
-gv_tree(O1, T) -->
-  {
-    tree_to_ugraph(T, UG),
-    merge_options([edge_labels(false)], O1, O2),
-    export_ugraph(O2, UG, G_Term)
-  },
-  gv_graph(G_Term).
 
 
 

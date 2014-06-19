@@ -29,15 +29,10 @@
     smoothType//1, % +SmoothType:atom
     %splineType//1,
     %startType//1,
+    string//1, % ?Content:atom
     style//2 % +Context:oneof([cluster,edge,node])
              % +Style:atom
     %viewPort//1
-  ]
-).
-:- reexport(
-  library(dcg/basics),
-  [
-    string//1 % +String:atom
   ]
 ).
 :- reexport(
@@ -381,6 +376,13 @@ smoothType(triangle).
 
 
 % @tbd startType
+
+
+%! string(?Content:atom)// .
+% A GraphViz string.
+
+string(Content) -->
+  atom(Content).
 
 
 %! style(?Context:oneof([cluster,edge,node]), ?Style:atom) is nondet.

@@ -23,6 +23,7 @@
 
 :- use_module(dcg(dcg_abnf)).
 :- use_module(dcg(dcg_cardinal)).
+:- use_module(dcg(dcg_content)).
 :- use_module(generics(db_ext)).
 :- use_module(os(file_ext)).
 :- use_module(sparql(sparql_char)).
@@ -46,14 +47,17 @@
 %   2. `rgba(Red:nonneg,Green:nonneg,Blue:nonneg,Alpha:nonneg)`
 %   3. `hsv(Hue:between(0.0,1.0),Saturation:between(0.0,1.0),Value:between(0.0,1.0))`
 
-color(rgb(Red,Green,Blue)) -->
+color(rgb(Red,Green,Blue)) --> !,
   `#`,
   '#'(3, hex_color, [Red,Green,Blue]).
-color(rgbs(Red,Green,Blue,Alpha)) -->
+color(rgbs(Red,Green,Blue,Alpha)) --> !,
   `#`,
   '#'(4, hex_color, [Red,Green,Blue,Alpha]).
-color(hsv(Hue,Saturation,Value)) -->
+color(hsv(Hue,Saturation,Value)) --> !,
   '#'(3, hsv_color, [Hue,Saturation,Value]).
+color(Name) -->
+  {gv_color(_, Name)},
+  atom(Name).
 
 hex_color(I) -->
   {W1 is I / 16},

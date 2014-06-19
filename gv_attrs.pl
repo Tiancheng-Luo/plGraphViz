@@ -68,7 +68,7 @@ gv_attr(Context, N=V1, N=V2):-
   ;
     Dcg =.. [Type,V1]
   ),
-  dcg_phrase(Dcg, V2),
+  once(dcg_phrase(Dcg, V2)),
   check_minimum(V1, Minimum).
 
 check_minimum(_, ''):- !.
