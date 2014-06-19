@@ -191,7 +191,7 @@ doubleList1(Float) -->
   double(Float).
 
 
-%! escString(+String:atom)// ,
+%! escString(+String:atom)// .
 % @tbd Support for context-dependent replacements.
 
 escString(String) -->
