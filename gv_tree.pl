@@ -1,9 +1,9 @@
 :- module(
   gv_tree,
   [
-    tree_to_gv_file/3 % +Options:list(nvpair)
-                      % +Tree:compound
+    tree_to_gv_file/3 % +Tree:compound
                       % ?ToFile:atom
+                      % +Options:list(nvpair)
   ]
 ).
 
@@ -12,7 +12,7 @@
 Export trees to GraphViz.
 
 @author Wouter Beek
-@version 2014/06
+@version 2014/06-2014/07
 */
 
 :- use_module(library(aggregate)).
@@ -23,14 +23,18 @@ Export trees to GraphViz.
 :- use_module(plGraphViz(gv_gif)).
 
 
-%! tree_to_gv_file(+Options:list(nvpair), +Tree:compound, ?ToFile:atom) is det.
+%! tree_to_gv_file(
+%!   +Tree:compound,
+%!   ?ToFile:atom,
+%!   +Options:list(nvpair)
+%! ) is det.
 % Stores the given tree term into a GraphViz file.
 %
 % Options are passed on to create_gif/3 and gif_to_gv_file/3.
 
-tree_to_gv_file(Options, Tree, ToFile):-
+tree_to_gv_file(Tree, ToFile, Options):-
   tree_to_gif(Tree, Gif, Options),
-  gif_to_gv_file(Options, Gif, ToFile).
+  gif_to_gv_file(Gif, ToFile, Options).
 
 
 tree_to_gif(H-T, Gif, Options):-

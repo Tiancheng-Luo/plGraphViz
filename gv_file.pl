@@ -1,12 +1,12 @@
 :- module(
   gv_file,
   [
-    gif_to_gv_file/3, % +Options:list(nvpair)
-                        % +GraphInterchangeFormat:compound
-                        % ?ToFile:atom
-    graph_to_svg_dom/3, % +Options:list(nvpair)
-                        % +GraphInterchangeFormat:compound
+    gif_to_gv_file/3, % +GraphInterchangeFormat:compound
+                      % ?ToFile:atom
+                      % +Options:list(nvpair)
+    graph_to_svg_dom/3, % +GraphInterchangeFormat:compound
                         % -SvgDom:list(compound)
+                        % +Options:list(nvpair)
     open_dot/1 % +File:file
   ]
 ).
@@ -20,11 +20,12 @@ Also converts between GraphViz DOT formatted files
 and GraphViz output files or SVG DOM structures.
 
 @author Wouter Beek
-@version 2011-2013/09, 2013/11-2014/01, 2014/05
+@version 2011-2013/09, 2013/11-2014/01, 2014/05, 2014/07
 */
 
 :- use_module(library(option)).
 :- use_module(library(process)).
+:- use_module(library(predicate_options)). % Declarations.
 
 :- use_module(generics(codes_ext)).
 :- use_module(generics(db_ext)).
@@ -48,73 +49,76 @@ and GraphViz output files or SVG DOM structures.
 :- multifile(user:prolog_file_type/2).
 
 % Register DOT.
-user:prolog_file_type(dot, dot).
-user:prolog_file_type(dot, graphviz).
-user:file_type_program(dot, dotty).
-user:file_type_program(dot, dotx).
-user:module_uses(gv_file, file_type(dot)).
+:- db_add_novel(user:prolog_file_type(dot, dot)).
+:- db_add_novel(user:prolog_file_type(dot, graphviz)).
+:- db_add_novel(user:file_type_program(dot, dotty)).
+:- db_add_novel(user:file_type_program(dot, dotx)).
+:- db_add_novel(user:module_uses(gv_file, file_type(dot))).
 
 % Register JPG/JPEG.
-user:prolog_file_type(jpeg, jpeg).
-user:prolog_file_type(jpeg, graphviz_output).
-user:prolog_file_type(jpg, jpeg).
-user:prolog_file_type(jpg, graphviz_output).
+:- db_add_novel(user:prolog_file_type(jpeg, jpeg)).
+:- db_add_novel(user:prolog_file_type(jpeg, graphviz_output)).
+:- db_add_novel(user:prolog_file_type(jpg, jpeg)).
+:- db_add_novel(user:prolog_file_type(jpg, graphviz_output)).
 
 % Register PDF.
-user:prolog_file_type(pdf, pdf).
-user:prolog_file_type(pdf, graphviz_output).
+:- db_add_novel(user:prolog_file_type(pdf, pdf)).
+:- db_add_novel(user:prolog_file_type(pdf, graphviz_output)).
 
 % Register PNG.
-user:prolog_file_type(png, png).
-user:prolog_file_type(png, graphviz_output).
+:- db_add_novel(user:prolog_file_type(png, png)).
+:- db_add_novel(user:prolog_file_type(png, graphviz_output)).
 
 % Register SVG.
-user:prolog_file_type(svg, graphviz_output).
-user:prolog_file_type(svg, svg).
+:- db_add_novel(user:prolog_file_type(svg, graphviz_output)).
+:- db_add_novel(user:prolog_file_type(svg, svg)).
 
 % Register XDOT.
-user:prolog_file_type(xdot, graphviz_output).
-user:prolog_file_type(xdot, xdot).
+:- db_add_novel(user:prolog_file_type(xdot, graphviz_output)).
+:- db_add_novel(user:prolog_file_type(xdot, xdot)).
+
+:- predicate_options(graph_to_svg_dom/3, 3, [
+     pass_to(gif_to_gv_file/3, 3)
+   ]).
+:- predicate_options(gif_to_gv_file/3, 3, [
+     pass_to(to_gv_file/3, 3)
+   ]).
+:- predicate_options(to_gv_file/3, 3, [
+     pass_to(convert_gv/3, 3)
+   ]).
+:- predicate_options(convert_gv/3, 3, [
+     method(+oneof([dot,sfdp])),
+     to_file_type(+oneof([dot,jpeg,pdf,svg,xdot]))
+   ]).
 
 
 
-%! gif_to_gv_file(
-%!   +Options:list(nvpair),
-%!   +GIF:compound,
-%!   -ToFile:atom
-%! ) is det.
+%! gif_to_gv_file(+Gif:compound, -ToFile:atom, +Options:list(nvpair)) is det.
 % Returns a file containing a GraphViz visualization of the given graph.
 %
 % The following options are supported:
 %   * =|method(+Method:oneof([dot,sfdp])|=
 %     The algorithm used by GraphViz for positioning the tree nodes.
 %     Either =dot= (default) or =sfdp=.
-%   * =|to_file_type(+FileType:oneof([jpeg,pdf,svg,xdot])|=
+%   * =|to_file_type(+FileType:oneof([dot,jpeg,pdf,svg,xdot])|=
 %     The file type of the generated GraphViz file.
-%
-% @arg Options A list of name-value pairs.
-% @arg GIF A compound term representing a graph.
-% @arg ToFile The atomic name of a file.
+%     Default: `pdf`.
 
-gif_to_gv_file(O1, GIF, ToFile):-
-  once(phrase(gv_graph(GIF), Codes)),
-  to_gv_file(O1, Codes, ToFile).
+gif_to_gv_file(Gif, ToFile, Options):-
+  once(phrase(gv_graph(Gif), Codes)),
+  to_gv_file(Codes, ToFile, Options).
 
 
 %! graph_to_svg_dom(
-%!   +Options:list(nvpair),
 %!   +GraphInterchangeFormat:compound,
-%!   -SvgDom:list(compound)
+%!   -SvgDom:list(compound),
+%!   +Options:list(nvpair)
 %! ) is det.
-% The following options are supported:
-%   * =|method(+Method:oneof([dot,sfdp])|=
-%     The algorithm used by GraphViz for positioning the tree nodes.
-%     Either =dot= (default) or =sfdp=.
 
-graph_to_svg_dom(O1, GIF, SvgDom):-
+graph_to_svg_dom(Gif, SvgDom, Options1):-
   % Make sure the file type of the output file is SvgDom.
-  merge_options([to_file_type=svg], O1, O2),
-  gif_to_gv_file(O2, GIF, ToFile),
+  merge_options([to_file_type=svg], Options1, Options2),
+  gif_to_gv_file(Gif, ToFile, Options2),
   file_to_svg(ToFile, SvgDom),
   safe_delete_file(ToFile).
 
@@ -133,31 +137,23 @@ open_dot(File):-
 
 % SUPPORT PREDICATES %
 
-%! convert_gv(+Options:list(nvpair), +FromFile:atom, ?ToFile:atom) is det.
+%! convert_gv(+FromFile:atom, ?ToFile:atom, +Options:list(nvpair)) is det.
 % Converts a GraphViz DOT file to an image file, using a specific
 % visualization method.
-%
-% The following options are supported:
-%   * =|method(+Method:oneof([dot,sfdp])|=
-%     The algorithm used by GraphViz for positioning the tree nodes.
-%     Either =dot= (default) or =sfdp=.
-%   * =|to_file_type(+FileType:oneof([jpeg,pdf,svg,xdot])|=
-%     The file type of the generated GraphViz file.
-%
-% @arg Options
-% @arg FromFile
-% @arg ToFile
 
-convert_gv(O1, FromFile, ToFile):-
+convert_gv(FromFile, ToFile, Options):-
+  option(to_file_type(dot), Options), !,
+  rename_file(FromFile, ToFile).
+convert_gv(FromFile, ToFile, Options):-
   % The input file must be readable.
   access_file(FromFile, read),
 
   % The method option.
-  option(method(Method), O1, dot),
+  option(method(Method), Options, dot),
   must_be(oneof([dot,sfdp]), Method),
 
   % The file type option.
-  option(to_file_type(ToFileType), O1, pdf),
+  option(to_file_type(ToFileType), Options, pdf),
   prolog_file_type(ToExtension, ToFileType),
   prolog_file_type(ToExtension, graphviz_output), !,
 
@@ -189,15 +185,10 @@ convert_gv(O1, FromFile, ToFile):-
   process_wait(PID, exit(ShellStatus)),
   exit_code_handler('GraphViz', ShellStatus).
 
-%! to_gv_file(+Options:list(nvpair), +Codes:list(code), ?ToFile:atom) is det.
-% The following options are supported:
-%   * =|method(+Method:oneof([dot,sfdp])|=
-%     The algorithm used by GraphViz for positioning the tree nodes.
-%     Either =dot= (default) or =sfdp=.
-%   * =|to_file_type(+FileType:oneof([jpeg,pdf,svg,xdot])|=
-%     The file type of the generated GraphViz file.
 
-to_gv_file(O1, Codes, ToFile):-
+%! to_gv_file(+Codes:list(code), ?ToFile:atom, +Options:list(nvpair)) is det.
+
+to_gv_file(Codes, ToFile, Options):-
   absolute_file_name(
     data(tmp),
     FromFile,
@@ -208,13 +199,13 @@ to_gv_file(O1, Codes, ToFile):-
     put_codes(Out, Codes),
     close(Out)
   ),
-  convert_gv(O1, FromFile, ToFile),
+  convert_gv(FromFile, ToFile, Options),
 
-  % DEB: Store DOT file.
-  ignore((
-    file_type_alternative(ToFile, graphviz, DOT_File),
-    safe_copy_file(FromFile, DOT_File)
-  )),
+  %%%%% DEB: Store DOT file.
+  %%%%ignore((
+  %%%%  file_type_alternative(ToFile, graphviz, DOT_File),
+  %%%%  safe_copy_file(FromFile, DOT_File)
+  %%%%)),
 
   safe_delete_file(FromFile).
 
