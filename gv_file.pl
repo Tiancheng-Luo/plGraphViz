@@ -4,9 +4,9 @@
     gif_to_gv_file/3, % +GraphInterchangeFormat:compound
                       % ?ToFile:atom
                       % +Options:list(nvpair)
-    graph_to_svg_dom/3, % +GraphInterchangeFormat:compound
-                        % -SvgDom:list(compound)
-                        % +Options:list(nvpair)
+    gif_to_svg_dom/3, % +GraphInterchangeFormat:compound
+                      % -SvgDom:list(compound)
+                      % +Options:list(nvpair)
     open_dot/1 % +File:file
   ]
 ).
@@ -77,7 +77,7 @@ and GraphViz output files or SVG DOM structures.
 :- db_add_novel(user:prolog_file_type(xdot, graphviz_output)).
 :- db_add_novel(user:prolog_file_type(xdot, xdot)).
 
-:- predicate_options(graph_to_svg_dom/3, 3, [
+:- predicate_options(gif_to_svg_dom/3, 3, [
      pass_to(gif_to_gv_file/3, 3)
    ]).
 :- predicate_options(gif_to_gv_file/3, 3, [
@@ -109,13 +109,13 @@ gif_to_gv_file(Gif, ToFile, Options):-
   to_gv_file(Codes, ToFile, Options).
 
 
-%! graph_to_svg_dom(
+%! gif_to_svg_dom(
 %!   +GraphInterchangeFormat:compound,
 %!   -SvgDom:list(compound),
 %!   +Options:list(nvpair)
 %! ) is det.
 
-graph_to_svg_dom(Gif, SvgDom, Options1):-
+gif_to_svg_dom(Gif, SvgDom, Options1):-
   % Make sure the file type of the output file is SvgDom.
   merge_options([to_file_type=svg], Options1, Options2),
   gif_to_gv_file(Gif, ToFile, Options2),
