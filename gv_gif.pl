@@ -16,15 +16,34 @@
 Support for creating GIF representations.
 
 @author Wouter Beek
-@version 2014/06
+@version 2014/06-2014/07
 */
 
 :- use_module(library(apply)).
+:- use_module(library(lambda)).
+:- use_module(library(option)).
 :- use_module(library(ordsets)).
+:- use_module(library(predicate_options)). % Declarations.
 
 :- use_module(generics(list_ext)).
+:- use_module(generics(option_ext)).
+:- use_module(graph_theory(graph_generic)).
 
 :- use_module(plRdf(rdf_name)). % Meta-DCG.
+
+:- predicate_options(create_gif/3, 3, [
+     pass_to(create_gif/4, 4)
+   ]).
+:- predicate_options(create_gif/4, 4, [
+     pass_to(vertex_term/3, 3),
+     pass_to(edge_term/3, 3),
+     graph_label(+atom)
+   ]).
+:- predicate_options(edge_term/3, 3, [
+   ]).
+:- predicate_options(vertex_term/3, 3, [
+     vertex_label(+atom)
+   ]).
 
 
 
@@ -40,17 +59,28 @@ create_gif(Es, Gif, Options):-
 %!   -Gif:compound,
 %!   +Options:list(nvpair)
 %! ) is det.
+% The following options are supported:
+%   * =|graph_label(+LabelFunction)|=
+%     The functions that assigns names to graphs.
+%     No default.
 
-create_gif(Vs, Es, graph(V_Terms,E_Terms,G_Attrs), Options):-
-  maplist(vertex_term0(Vs, Options), Vs, V_Terms),
-  maplist(edge_term0(Vs, Options), Es, E_Terms),
-  G_Attrs = [directed=true].
-
-edge_term0(Vs, Options, E, E_Term):-
-  edge_term(Vs, E, E_Term, Options).
-
-vertex_term0(Vs, Options, V, V_Term):-
-  vertex_term(Vs, V, V_Term, Options).
+create_gif(Vs, Es, graph(VTerms,ETerms,GAttrs), Options):-
+  % Vertex terms.
+  maplist(\V^VTerm^vertex_term(Vs, V, VTerm, Options), Vs, VTerms),
+  
+  % Edge terms.
+  maplist(\E^ETerm^edge_term(Vs, E, ETerm, Options), Es, ETerms),
+  
+  % Graph attributes.
+  (
+    option(graph_label(LabelFunction), Options)
+  ->
+    call(LabelFunction, Graph, GraphLabel)
+  ;
+    true
+  ),
+  
+  merge_options([directed=true,label=GraphLabel], GAttrs).
 
 
 %! edge_term(
@@ -60,11 +90,13 @@ vertex_term0(Vs, Options, V, V_Term):-
 %!   +Options:list(nvpair)
 %! ) is det.
 
-edge_term(Vs, E, edge(FromId,ToId,E_Attrs), _):-
-  edge_components(E, FromV, _, ToV),
+edge_term(Vs, E, edge(FromId,ToId,EAttrs), _):-
+  edge_components(E, FromV, ToV),
+  
   nth0chk(FromId, Vs, FromV),
   nth0chk(ToId, Vs, ToV),
-  E_Attrs = [].
+  
+  EAttrs = [].
 
 
 %! vertex_term(
@@ -73,37 +105,16 @@ edge_term(Vs, E, edge(FromId,ToId,E_Attrs), _):-
 %!   -VertexTerm:compound,
 %!   +Options:list(nvpair)
 %! ) is det.
+% The following options are supported:
+%   * =|vertex_label(+LabelFunction)|=
+%     A function that assigns labels to vertices.
 
-vertex_term(Vs, V, vertex(Id,V,V_Attrs), Options):-
+vertex_term(Vs, V, vertex(Id,V,VAttrs), Options):-
   nth0chk(Id, Vs, V),
   
   % Label.
-  option(vertex_label(VertexLabel), Options, =),
-  call(VertexLabel, V, V_Label),
+  option(vertex_label(LabelFunction), Options, =),
+  call(LabelFunction, V, VLabel),
   
-  V_Attrs = [label=V_Label].
-
-vertex_label(V, V_Label):-
-  dcg_with_output_to(atom(V_Label), rdf_term_name([literal_ellipsis(50)], V)).
-
-
-
-% Helpers
-
-%! edge_components(+Edge:compound, -FromVertex, -EdgeType, -ToVertex) is det.
-%! edge_components(-Edge:compound, +FromVertex, ?EdgeType, +ToVertex) is det.
-
-edge_components(FromV-EdgeType-ToV, FromV, EdgeType, ToV):-
-  nonvar(EdgeType).
-edge_components(FromV-ToV, FromV, EdgeType, ToV):-
-  var(EdgeType).
-
-
-%! edges_to_vertices(+Edges:ordset, -Vertices:ordset) is det.
-
-edges_to_vertices([], []):- !.
-edges_to_vertices([S-_-O|T], S3):-
-  edges_to_vertices(T, S1),
-  ord_add_element(S1, S, S2),
-  ord_add_element(S2, O, S3).
+  VAttrs = [label=VLabel].
 
