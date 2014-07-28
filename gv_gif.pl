@@ -40,6 +40,10 @@ Support for creating GIF representations.
      pass_to(vertex_term/3, 3)
    ]).
 :- predicate_options(edge_term/3, 3, [
+     edge_arrowhead(+atom),
+     edge_color(+atom),
+     edge_label(+atom),
+     edge_style(+atom)
    ]).
 :- predicate_options(graph_attributes/2, 2, [
      directedness(+boolean),
