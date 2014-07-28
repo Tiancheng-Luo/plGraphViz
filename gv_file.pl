@@ -110,18 +110,14 @@ and GraphViz output files or SVG DOM structures.
 
 codes_to_gv_file(Codes, ToFile, Options):-
   access_file(ToFile, write),
+  absolute_file_name(data(tmp), TmpFile, [access(write),file_type(dot)]),
   setup_call_cleanup(
-    new_memory_file(MemFile),
-    (
-      setup_call_cleanup(
-        open(MemFile, write, Write, [encoding(utf8),type(test)]),
-        put_codes(Write, Codes),
-        close(Write)
-      ),
-      file_to_gv(MemFile, ToFile, Options)
-    ),
-    free_memory_file(MemFile)
-  ).
+    open(TmpFile, write, Write, [encoding(utf8)]),
+    put_codes(Write, Codes),
+    close(Write)
+  ),
+  file_to_gv(TmpFile, ToFile, Options),
+  delete_file(TmpFile).
 
 
 %! file_to_gv(+FromFile:atom, +Options:list(nvpair)) is det.
@@ -137,9 +133,6 @@ file_to_gv(FromFile, ToFile, Options):-
   option(to_file_type(dot), Options), !,
   rename_file(FromFile, ToFile).
 file_to_gv(FromFile, ToFile, Options):-
-  % The input file must be readable.
-  access_file(FromFile, read),
-
   % The method option.
   option(method(Method), Options, dot),
   must_be(oneof([dot,sfdp]), Method),

@@ -84,10 +84,10 @@ create_gif(Es, Gif, Options):-
 create_gif(Vs, Es, graph(VTerms,ETerms,GAttrs), Options):-
   % Vertex terms.
   maplist(\V^VTerm^vertex_term(Vs, V, VTerm, Options), Vs, VTerms),
-  
+
   % Edge terms.
   maplist(\E^ETerm^edge_term(Vs, E, ETerm, Options), Es, ETerms),
-  
+
   % Graph attributes.
   graph_attributes(GAttrs, Options).
 
@@ -104,11 +104,11 @@ create_gif(Vs, Es, graph(VTerms,ETerms,GAttrs), Options):-
 %   * =|edge_label(+atom)|=
 %   * =|edge_style(+atom)|=
 
-edge_term(Vs, E, edge(FromId,ToId,EAttrs), _):-
+edge_term(Vs, E, edge(FromId,ToId,EAttrs), Options):-
   edge_components(E, FromV, ToV),
   nth0chk(FromId, Vs, FromV),
   nth0chk(ToId, Vs, ToV),
-  
+
   % Arrowhead
   if_option(edge_arrowhead(ArrowheadFunction), Options,
     call(ArrowheadFunction, E, EArrowhead)
@@ -125,9 +125,9 @@ edge_term(Vs, E, edge(FromId,ToId,EAttrs), _):-
   if_option(edge_style(StyleFunction), Options,
     call(StyleFunction, E, EStyle)
   ),
-  
+
   merge_options(
-    [arrowHead=EArrowhead,color=EColor,label=ELabel,style=EStyle],
+    [arrowhead=EArrowhead,color=EColor,label=ELabel,style=EStyle],
     EAttrs
   ).
 
@@ -154,7 +154,7 @@ graph_attributes(GAttrs, Options):-
   if_option(graph_colorscheme(Colorscheme), Options, true),
   % Label.
   if_option(graph_label(GLabel), Options, true),
-  
+
   merge_options(
     [colorscheme=Colorscheme,directedness=Directedness,label=GLabel],
     GAttrs
@@ -186,7 +186,7 @@ graph_attributes(GAttrs, Options):-
 
 vertex_term(Vs, V, vertex(Id,V,VAttrs), Options):-
   nth0chk(Id, Vs, V),
-  
+
   % Color.
   if_option(vertex_color(ColorFunction), Options,
     call(ColorFunction, V, VColor)
@@ -207,7 +207,7 @@ vertex_term(Vs, V, vertex(Id,V,VAttrs), Options):-
   if_option(vertex_shape(ShapeFunction), Options,
     call(ShapeFunction, V, VShape)
   ),
-  
+
   merge_options(
     [
       color=VColor,
