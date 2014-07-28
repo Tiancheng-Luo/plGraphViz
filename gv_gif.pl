@@ -43,7 +43,7 @@ Support for creating GIF representations.
    ]).
 :- predicate_options(graph_attributes/2, 2, [
      directedness(+boolean),
-     graph_colorscheme(+oneof([none,svg,x11]),
+     graph_colorscheme(+oneof([none,svg,x11])),
      graph_label(+atom)
    ]).
 
@@ -109,23 +109,23 @@ edge_term(Vs, E, edge(FromId,ToId,EAttrs), _):-
   if_option(edge_arrowhead(ArrowheadFunction), Options,
     call(ArrowheadFunction, E, EArrowhead)
   ),
-  
   % Color.
   if_option(edge_color(ColorFunction), Options,
     call(ColorFunction, E, EColor)
   ),
-  
   % Label.
   if_option(edge_label(LabelFunction), Options,
     call(LabelFunction, E, ELabel)
   ),
-  
   % Style.
   if_option(edge_style(StyleFunction), Options,
     call(StyleFunction, E, EStyle)
   ),
   
-  EAttrs = [arrowHead=EArrowhead,color=EColor,label=ELabel,style=EStyle].
+  merge_options(
+    [arrowHead=EArrowhead,color=EColor,label=ELabel,style=EStyle],
+    EAttrs
+  ).
 
 
 %! graph_attributes(
@@ -146,10 +146,8 @@ edge_term(Vs, E, edge(FromId,ToId,EAttrs), _):-
 graph_attributes(GAttrs, Options):-
   % Directedness.
   option(directedness(Directedness), Options, false),
-  
   % Colorscheme.
   if_option(graph_colorscheme(Colorscheme), Options, true),
-  
   % Label.
   if_option(graph_label(GLabel), Options, true),
   
@@ -168,9 +166,6 @@ graph_attributes(GAttrs, Options):-
 % The following options are supported:
 %   * =|vertex_color(+ColorFunction)|=
 %     A function that assigns colors to vertices.
-%     No default.
-%   * =|vertex_coordinate(+CoordinateFunction)|=
-%     A function that assigns coordinates to vertices.
 %     No default.
 %   * =|vertex_image(+ImageFunction)|=
 %     A function that assinges images to vertices.
@@ -192,27 +187,18 @@ vertex_term(Vs, V, vertex(Id,V,VAttrs), Options):-
   if_option(vertex_color(ColorFunction), Options,
     call(ColorFunction, V, VColor)
   ),
-  
-  % Coordinates.
-  %%%%if_option(vertex_coordinate(CoordinateFunction), Options,
-  %%%%  call(CoordinateFunction, V, VCoordinates)
-  %%%%),
-  
   % Image.
   if_option(image(ImageFunction), Options,
     call(ImageFunction, V, VImage)
   ),
-  
   % Label.
   if_option(vertex_label(LabelFunction), Options,
     call(LabelFunction, V, VLabel)
   ),
-  
   % Peripheries.
   if_option(vertex_peripheries(PeripheriesFunction), Options,
     call(PeripheriesFunction, V, VPeripheries)
   ),
-  
   % Shape.
   if_option(vertex_shape(ShapeFunction), Options,
     call(ShapeFunction, V, VShape)
