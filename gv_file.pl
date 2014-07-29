@@ -146,11 +146,8 @@ file_to_gv(FromFile, ToFile, Options):-
   (
     var(ToFile)
   ->
-    absolute_file_name(
-      data(export),
-      ToFile,
-      [access(write),file_type(ToFileType)]
-    )
+    user:prolog_file_type(ToExtension, ToFileType),
+    file_alternative(FromFile, _, _, ToExtension, ToFile)
   ;
     is_absolute_file_name(ToFile),
     % The given output file must match a certain file extension.
