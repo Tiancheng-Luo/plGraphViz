@@ -105,7 +105,7 @@ create_gif(Vs, Es, graph(VTerms,ETerms,GAttrs), Options):-
 %   * =|edge_style(+atom)|=
 
 edge_term(Vs, E, edge(FromId,ToId,EAttrs), Options):-
-  edge_components(E, FromV, ToV),
+  edge(E, FromV, ToV),
   nth0chk(FromId, Vs, FromV),
   nth0chk(ToId, Vs, ToV),
 
