@@ -27,7 +27,7 @@ Support for creating GIF representations.
 
 :- use_module(generics(list_ext)).
 :- use_module(generics(option_ext)).
-:- use_module(graph_theory(graph_generic)).
+:- use_module(graph_theory(graph_theory)).
 
 :- use_module(plRdf(rdf_name)). % Meta-DCG.
 
