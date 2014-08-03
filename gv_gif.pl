@@ -65,7 +65,7 @@ Support for creating GIF representations.
 %! create_gif(+Edges:ordset, -Gif:compound, +Options:list(nvpair)) is det.
 
 create_gif(Es, Gif, Options):-
-  edges_to_vertices(Es, Vs),
+  graph_theory:edges_to_vertices(Es, Vs),
   create_gif(Vs, Es, Gif, Options).
 
 %! create_gif(
@@ -105,7 +105,7 @@ create_gif(Vs, Es, graph(VTerms,ETerms,GAttrs), Options):-
 %   * =|edge_style(+atom)|=
 
 edge_term(Vs, E, edge(FromId,ToId,EAttrs), Options):-
-  edge_components(E, FromV, ToV),
+  graph_theory:edge_components(E, FromV, ToV),
   nth0chk(FromId, Vs, FromV),
   nth0chk(ToId, Vs, ToV),
 
