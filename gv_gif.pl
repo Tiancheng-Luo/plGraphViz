@@ -27,7 +27,7 @@ Support for creating GIF representations.
 
 :- use_module(generics(list_ext)).
 :- use_module(generics(option_ext)).
-:- use_module(graph_theory(graph_theory)).
+:- use_module(graph_theory(graph_generic)).
 
 :- use_module(plRdf(rdf_name)). % Meta-DCG.
 
@@ -65,7 +65,7 @@ Support for creating GIF representations.
 %! create_gif(+Edges:ordset, -Gif:compound, +Options:list(nvpair)) is det.
 
 create_gif(Es, Gif, Options):-
-  graph_theory:edges_to_vertices(Es, Vs),
+  edges_to_vertices(Es, Vs),
   create_gif(Vs, Es, Gif, Options).
 
 %! create_gif(
@@ -105,7 +105,7 @@ create_gif(Vs, Es, graph(VTerms,ETerms,GAttrs), Options):-
 %   * =|edge_style(+atom)|=
 
 edge_term(Vs, E, edge(FromId,ToId,EAttrs), Options):-
-  graph_theory:edge_components(E, FromV, ToV),
+  edge_components(E, FromV, ToV),
   nth0chk(FromId, Vs, FromV),
   nth0chk(ToId, Vs, ToV),
 
