@@ -112,8 +112,7 @@ codes_to_gv_file(Codes, ToFile, Options):-
     put_codes(Write, Codes),
     close(Write)
   ),
-  file_to_gv(TmpFile, ToFile, Options),
-  delete_file(TmpFile).
+  file_to_gv(TmpFile, ToFile, Options).
 
 
 %! file_to_gv(+FromFile:atom, +Options:list(nvpair)) is det.
