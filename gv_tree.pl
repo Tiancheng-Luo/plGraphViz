@@ -30,7 +30,7 @@ Export trees to GraphViz.
 %! ) is det.
 % Stores the given tree term into a GraphViz file.
 %
-% Options are passed on to create_gif/3 and gif_to_gv_file/3.
+% Options are passed on to build_gif/3 and gif_to_gv_file/3.
 
 tree_to_gv_file(Tree, ToFile, Options):-
   tree_to_gif(Tree, Gif, Options),
@@ -39,5 +39,5 @@ tree_to_gv_file(Tree, ToFile, Options):-
 
 tree_to_gif(H-T, Gif, Options):-
   tree_to_vertices_edges(Tree, Vs, Es),
-  create_gif(Vs, Es, Gif, Options).
+  build_gif(Vs, Es, Gif, Options).
 
