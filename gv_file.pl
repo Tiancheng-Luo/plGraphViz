@@ -7,7 +7,7 @@
                   % ?ToFile:atom
                   % +Options:list(nvpair)
     gif_to_gv_file/3, % +GraphInterchangeFormat:compound
-                      % +ToFile:atom
+                      % ?ToFile:atom
                       % +Options:list(nvpair)
     gif_to_svg_dom/3, % +GraphInterchangeFormat:compound
                       % -SvgDom:list(compound)
@@ -25,7 +25,7 @@ Also converts between GraphViz DOT formatted files
 and GraphViz output files or SVG DOM structures.
 
 @author Wouter Beek
-@version 2011-2013/09, 2013/11-2014/01, 2014/05, 2014/07
+@version 2013/09, 2013/11-2014/01, 2014/05, 2014/07-2014/08
 */
 
 :- use_module(library(option)).
@@ -36,7 +36,6 @@ and GraphViz output files or SVG DOM structures.
 :- use_module(generics(db_ext)).
 :- use_module(os(file_ext)).
 :- use_module(os(run_ext)).
-:- use_module(os(safe_file)).
 :- use_module(svg(svg_file)).
 
 :- use_module(plGraphViz(gv_dot)).
@@ -100,12 +99,11 @@ and GraphViz output files or SVG DOM structures.
 
 %! codes_to_gv_file(
 %!   +Codes:list(code),
-%!   +ToFile:atom,
+%!   ?ToFile:atom,
 %!   +Options:list(nvpair)
 %! ) is det.
 
 codes_to_gv_file(Codes, ToFile, Options):-
-  access_file(ToFile, write),
   absolute_file_name(data(tmp), TmpFile, [access(write),file_type(dot)]),
   setup_call_cleanup(
     open(TmpFile, write, Write, [encoding(utf8)]),
@@ -163,7 +161,7 @@ file_to_gv(FromFile, ToFile, Options):-
   exit_code_handler('GraphViz', ShellStatus).
 
 
-%! gif_to_gv_file(+Gif:compound, +ToFile:atom, +Options:list(nvpair)) is det.
+%! gif_to_gv_file(+Gif:compound, ?ToFile:atom, +Options:list(nvpair)) is det.
 % Returns a file containing a GraphViz visualization of the given graph.
 %
 % The following options are supported:
@@ -190,7 +188,7 @@ gif_to_svg_dom(Gif, SvgDom, Options1):-
   merge_options([to_file_type=svg], Options1, Options2),
   gif_to_gv_file(Gif, ToFile, Options2),
   file_to_svg(ToFile, SvgDom),
-  safe_delete_file(ToFile).
+  delete_file(ToFile).
 
 
 %! open_dot(+File:atom) is det.

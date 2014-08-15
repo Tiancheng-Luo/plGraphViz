@@ -197,6 +197,8 @@ gv_graph(graph(VTerms, RankedVTerms, ETerms, GAttrs1)) -->
   gv_strict(Strict),
   gv_graph_type(Directed), ` `,
   gv_id(GName), ` `,
+
+  % The body of the DOT file appears between curly braces.
   bracketed(
     curly,
     gv_graph0(
@@ -228,9 +230,21 @@ gv_graph0(
   % Attributes that are the same for all edges.
   gv_generic_attributes_statement(edge, NewI, GAttrs, SharedEAttrs),
 
-  % Only add a newline if some content was written in the previous three
-  % lines.
-  ({(GAttrs == [], SharedVAttrs == [], SharedEAttrs == [])} -> `` ; newline),
+  % Only add a newline if some content was already written
+  % and some content is about to be written.
+  (
+    {
+      % Succeeds if no content was written.
+      (GAttrs == [], SharedVAttrs == [], SharedEAttrs == [])
+    ;
+      % Succeeds if no content is about to be written.
+      (NewVTerms == [], RankedVTerms == [])
+    }
+  ->
+    ``
+  ;
+    newline
+  ),
 
   % The list of GraphViz nodes.
   '*'(gv_node_statement(NewI, GAttrs), NewVTerms),
