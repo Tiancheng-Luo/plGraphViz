@@ -21,15 +21,18 @@
 :- use_module(library(persistency)).
 :- use_module(library(xpath)).
 
-:- use_module(dcg(dcg_abnf)).
-:- use_module(dcg(dcg_cardinal)).
-:- use_module(dcg(dcg_content)).
 :- use_module(generics(db_ext)).
 :- use_module(os(file_ext)).
-:- use_module(sparql(sparql_char)).
+
+:- use_module(plDcg(dcg_abnf)).
+:- use_module(plDcg(dcg_cardinal)).
+:- use_module(plDcg(dcg_content)).
+:- use_module(plDcg_rfc(rfc2616_basic)).
 
 :- use_module(plHtml(html)).
 :- use_module(plHtml(html_table)).
+
+:- use_module(plSparql_parse(sparql_char)).
 
 :- db_add_novel(user:prolog_file_type(log, logging)).
 
@@ -49,12 +52,12 @@
 
 color(rgb(Red,Green,Blue)) --> !,
   `#`,
-  '#'(3, hex_color, [Red,Green,Blue]).
+  '#'(3, hex_color, [Red,Green,Blue], []).
 color(rgbs(Red,Green,Blue,Alpha)) --> !,
   `#`,
-  '#'(4, hex_color, [Red,Green,Blue,Alpha]).
+  '#'(4, hex_color, [Red,Green,Blue,Alpha], []).
 color(hsv(Hue,Saturation,Value)) --> !,
-  '#'(3, hsv_color, [Hue,Saturation,Value]).
+  '#'(3, hsv_color, [Hue,Saturation,Value], []).
 color(Name) -->
   {gv_color(_, Name)},
   atom(Name).
@@ -72,11 +75,11 @@ hsv_color(D, Head, Tail):-
 %! colorList(+Pairs:list(pair(compound,float)))// .
 
 colorList(Pairs) -->
-  '+'(wc, Pairs).
+  '+'(wc, Pairs, []).
 
 wc(Color-Float) -->
   color(Color),
-  '?'(wc_weight(Float)).
+  '?'(wc_weight(Float), []).
 
 wc_weight(Float) -->
   `;`,

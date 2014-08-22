@@ -22,12 +22,11 @@ In GraphViz vertices are called 'nodes'.
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
 
-:- use_module(dcg(dcg_abnf)).
-:- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_content)).
-:- use_module(dcg(dcg_generic)).
-:- use_module(dcg(dcg_meta)).
-:- use_module(dcg(dcg_os)).
+:- use_module(plDcg(dcg_abnf)).
+:- use_module(plDcg(dcg_ascii)).
+:- use_module(plDcg(dcg_content)).
+:- use_module(plDcg(dcg_generic)).
+:- use_module(plDcg(dcg_meta)).
 
 :- use_module(plGraphViz(gv_attrs)).
 :- use_module(plGraphViz(gv_html)).
@@ -56,7 +55,7 @@ gv_attribute(Name=Val) -->
 % Attributes occur between square brackets.
 gv_attribute_list(Context, _, Attrs1) -->
   {maplist(gv_attr(Context), Attrs1, Attrs2)},
-  bracketed(square, '*'(gv_attribute, Attrs2)).
+  bracketed(square, '*'(gv_attribute, Attrs2, [])).
 
 
 %! gv_compass_pt(+Direction:oneof(['_',c,e,n,ne,nw,s,se,sw,w]))// .
@@ -117,7 +116,7 @@ gv_edge_statement(I, Directed, GAttrs, edge(FromId,ToId,EAttrs)) -->
   % We want `colorscheme/1` from the edges and
   % `directionality/1` from the graph.
   gv_attribute_list(edge, GAttrs, EAttrs),
-  newline.
+  line_feed.
 
 
 %! gv_generic_attributes_statement(
@@ -142,7 +141,7 @@ gv_generic_attributes_statement(_, _, _, []) --> [], !.
 gv_generic_attributes_statement(Kind, I, GraphAttrs, KindAttrs) -->
   indent(I),
   gv_kind(Kind), ` `,
-  gv_attribute_list(Kind, GraphAttrs, KindAttrs), newline.
+  gv_attribute_list(Kind, GraphAttrs, KindAttrs), line_feed.
 
 
 %! gv_graph(+GraphTerm:compound)//
@@ -208,7 +207,7 @@ gv_graph(graph(VTerms, RankedVTerms, ETerms, GAttrs1)) -->
       Directed, GAttrs5
     )
   ),
-  newline.
+  line_feed.
 
 gv_graph0(
   I,
@@ -216,7 +215,7 @@ gv_graph0(
   NewETerms, SharedEAttrs,
   Directed, GAttrs
 ) -->
-  newline,
+  line_feed,
 
   % The following lines are indented.
   {NewI is I + 1},
@@ -230,7 +229,7 @@ gv_graph0(
   % Attributes that are the same for all edges.
   gv_generic_attributes_statement(edge, NewI, GAttrs, SharedEAttrs),
 
-  % Only add a newline if some content was already written
+  % Only add a line_feed if some content was already written
   % and some content is about to be written.
   (
     {
@@ -243,16 +242,16 @@ gv_graph0(
   ->
     ``
   ;
-    newline
+    line_feed
   ),
 
   % The list of GraphViz nodes.
-  '*'(gv_node_statement(NewI, GAttrs), NewVTerms),
-  ({NewVTerms == []} -> `` ; newline),
+  '*'(gv_node_statement(NewI, GAttrs), NewVTerms, []),
+  ({NewVTerms == []} -> `` ; line_feed),
 
   % The ranked GraphViz nodes (displayed at the same height).
-  '*'(gv_ranked_node_collection(NewI, GAttrs), RankedVTerms),
-  ({RankedVTerms == []} -> `` ; newline),
+  '*'(gv_ranked_node_collection(NewI, GAttrs), RankedVTerms, []),
+  ({RankedVTerms == []} -> `` ; line_feed),
 
   {
     findall(
@@ -268,12 +267,12 @@ gv_graph0(
   },
 
   % The rank edges.
-  '*'(gv_edge_statement(NewI, Directed, GAttrs), RankEdges),
+  '*'(gv_edge_statement(NewI, Directed, GAttrs), RankEdges, []),
 
   % The non-rank edges.
-  '*'(gv_edge_statement(NewI, Directed, GAttrs), NewETerms),
+  '*'(gv_edge_statement(NewI, Directed, GAttrs), NewETerms, []),
 
-  % Note that we do not include a newline here.
+  % Note that we do not include a line_feed here.
 
   % We want to indent the closing curly brace.
   indent(I).
@@ -394,15 +393,15 @@ gv_node_id(Id) -->
 gv_node_statement(I, GraphAttrs, vertex(Id,_,VAttrs)) -->
   indent(I),
   gv_node_id(Id), ` `,
-  gv_attribute_list(node, GraphAttrs, VAttrs), newline.
+  gv_attribute_list(node, GraphAttrs, VAttrs), line_feed.
 
 
 gv_port -->
   gv_port_location,
-  '?'(gv_port_angle).
+  '?'(gv_port_angle, []).
 gv_port -->
   gv_port_angle,
-  '?'(gv_port_location).
+  '?'(gv_port_location, []).
 gv_port -->
   `:`,
   gv_compass_pt(_).
@@ -452,18 +451,22 @@ gv_ranked_node_collection(
 ) -->
   indent(I),
   bracketed(curly, (
-    newline,
+    line_feed,
 
     % The rank attribute.
     {NewI is I + 1},
-    indent(NewI), gv_attribute(rank=same), `;`, newline,
+    indent(NewI), gv_attribute(rank=same), `;`, line_feed,
 
-    '*'(gv_node_statement(NewI, GraphAttrs), [Rank_V_Term|Content_V_Terms]),
-
+    '*'(
+      gv_node_statement(NewI, GraphAttrs),
+      [Rank_V_Term|Content_V_Terms],
+      []
+    ),
+    
     % We want to indent the closing curly brace.
     indent(I)
   )),
-  newline.
+  line_feed.
 
 
 %! gv_strict(+Strict:boolean)// is det.

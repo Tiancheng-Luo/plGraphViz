@@ -11,9 +11,10 @@
 @version 2014/05-2014/06
 */
 
-:- use_module(dcg(dcg_abnf)).
-:- use_module(dcg(dcg_cardinal)).
 :- use_module(math(math_ext)).
+
+:- use_module(plDcg(dcg_abnf)).
+:- use_module(plDcg(dcg_cardinal)).
 
 
 
@@ -48,7 +49,7 @@ gv_numeral_abs(N) -->
     integer(N2)
   ;
     integer(N1),
-    '?'((`.`, 'integer?'(N2)))
+    '?'((`.`, 'integer?'(N2)), [])
   ).
 gv_numeral_abs(N) -->
   {var(N)},

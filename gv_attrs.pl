@@ -17,10 +17,11 @@
 :- use_module(library(persistency)).
 :- use_module(library(xpath)).
 
-:- use_module(dcg(dcg_content)).
-:- use_module(dcg(dcg_generic)).
 :- use_module(generics(db_ext)).
 :- use_module(os(file_ext)).
+
+:- use_module(plDcg(dcg_content)).
+:- use_module(plDcg(dcg_generic)).
 
 :- use_module(plHtml(html)).
 :- use_module(plHtml(html_table)).

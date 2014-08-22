@@ -49,9 +49,9 @@
 @version 2014/06
 */
 
-:- use_module(dcg(dcg_abnf)).
-:- use_module(dcg(dcg_cardinal)).
-:- use_module(dcg(dcg_content)).
+:- use_module(plDcg(dcg_abnf)).
+:- use_module(plDcg(dcg_cardinal)).
+:- use_module(plDcg(dcg_content)).
 
 :- use_module(plGraphViz(gv_html)).
 
@@ -97,7 +97,7 @@ gv_attr_type(viewPort).
 % An *addDouble* is represented by a Prolog float.
 
 addDouble(Float) -->
-  '?'(`+`),
+  '?'(`+`, []),
   double(Float).
 
 
@@ -106,7 +106,7 @@ addDouble(Float) -->
 % `point(X:float,Y:float,InputOnly:boolean)`.
 
 addPoint(Point) -->
-  '?'(`+`),
+  '?'(`+`, []),
   point(Point).
 
 
@@ -184,7 +184,7 @@ double(Double1) -->
 
 doubleList([H|T]) -->
   double(H),
-  '*'(doubleList1, T).
+  '*'(doubleList1, T, []).
 
 doubleList1(Float) -->
   `:`,
@@ -255,7 +255,7 @@ input_only(true) --> `!`.
 
 
 pointList(Points) -->
-  '*'(point, Points).
+  '*'(point, Points, []).
 
 
 % @tbd portPos
