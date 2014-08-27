@@ -11,7 +11,7 @@
 @version 2013/07, 2013/09, 2014/03-2014/06
 */
 
-:- use_module(dcg(dcg_content)).
+:- use_module(plDcg(dcg_content)).
 
 :- use_module(plHtml(html_dcg)).
 

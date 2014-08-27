@@ -22,12 +22,11 @@ In GraphViz vertices are called 'nodes'.
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
 
-:- use_module(dcg(dcg_abnf)).
-:- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_content)).
-:- use_module(dcg(dcg_generic)).
-:- use_module(dcg(dcg_meta)).
-:- use_module(dcg(dcg_os)).
+:- use_module(plDcg(dcg_abnf)).
+:- use_module(plDcg(dcg_ascii)).
+:- use_module(plDcg(dcg_content)).
+:- use_module(plDcg(dcg_generic)).
+:- use_module(plDcg(dcg_meta)).
 
 :- use_module(plGraphViz(gv_attrs)).
 :- use_module(plGraphViz(gv_html)).
@@ -56,7 +55,7 @@ gv_attribute(Name=Val) -->
 % Attributes occur between square brackets.
 gv_attribute_list(Context, _, Attrs1) -->
   {maplist(gv_attr(Context), Attrs1, Attrs2)},
-  bracketed(square, '*'(gv_attribute, Attrs2)).
+  bracketed(square, '*'(gv_attribute, Attrs2, [])).
 
 
 %! gv_compass_pt(+Direction:oneof(['_',c,e,n,ne,nw,s,se,sw,w]))// .
@@ -76,12 +75,12 @@ gv_compass_pt(sw) --> `sw`.
 gv_compass_pt(w) --> `w`.
 
 
-%! gv_edge_operator(+Directedness:boolean)// .
+%! gv_edge_operator(+Directed:boolean)// .
 % The binary edge operator between two vertices.
 % The operator that is used depends on whether the graph is directed or
 % undirected.
 %
-% @arg Directedness Whether an edge is directed (operator `->`) or
+% @arg Directed Whether an edge is directed (operator `->`) or
 %                   undirected (operator `--`).
 
 gv_edge_operator(false) --> !, `--`.
@@ -90,14 +89,14 @@ gv_edge_operator(true) --> arrow(right, 2).
 
 %! gv_edge_statement(
 %!   +Indent:nonneg,
-%!   +Directedness:boolean,
+%!   +Directed:boolean,
 %!   +GraphAttributes:list(nvpair),
 %!   +EdgeTerm:compound
 %! )// is det.
 % A GraphViz statement describing an edge.
 %
 % @arg Indent The indentation level at which the edge statement is written.
-% @arg Directedness Whether the graph is directed or not.
+% @arg Directed Whether the graph is directed or not.
 % @arg GraphAttributes The attributes of the graph. Some of these attributes
 %      may be used in the edge statement (e.g., the colorscheme).
 % @arg EdgeTerm A compound term in the GIFormat, representing an edge.
@@ -106,18 +105,18 @@ gv_edge_operator(true) --> arrow(right, 2).
 %      at the from and/or to location.
 % @tbd Add support for multiple, consecutive occurrences of gv_edge_rhs//2.
 
-gv_edge_statement(I, Directedness, GAttrs, edge(FromId,ToId,EAttrs)) -->
+gv_edge_statement(I, Directed, GAttrs, edge(FromId,ToId,EAttrs)) -->
   indent(I),
   gv_node_id(FromId), ` `,
 
-  gv_edge_operator(Directedness), ` `,
+  gv_edge_operator(Directed), ` `,
 
   gv_node_id(ToId), ` `,
 
   % We want `colorscheme/1` from the edges and
   % `directionality/1` from the graph.
   gv_attribute_list(edge, GAttrs, EAttrs),
-  newline.
+  line_feed.
 
 
 %! gv_generic_attributes_statement(
@@ -142,13 +141,13 @@ gv_generic_attributes_statement(_, _, _, []) --> [], !.
 gv_generic_attributes_statement(Kind, I, GraphAttrs, KindAttrs) -->
   indent(I),
   gv_kind(Kind), ` `,
-  gv_attribute_list(Kind, GraphAttrs, KindAttrs), newline.
+  gv_attribute_list(Kind, GraphAttrs, KindAttrs), line_feed.
 
 
 %! gv_graph(+GraphTerm:compound)//
 % The follow graph attributes are supported,
 % beyond the GraphViz attributes for graphs:
-%   * `directedness(+boolean)`
+%   * `directed(+boolean)`
 %      Whether the graph is directed (`true`) or undirected (`false`).
 %      Default: `false`.
 %   * `name(+GraphName:atom)`
@@ -185,7 +184,7 @@ gv_graph(graph(VTerms, RankedVTerms, ETerms, GAttrs1)) -->
     shared_attributes(VTerms, SharedVAttrs, NewVTerms),
     shared_attributes(ETerms, SharedEAttrs, NewETerms),
     select_nvpair(strict=Strict, GAttrs1, GAttrs2, false),
-    select_nvpair(directedness=Directedness, GAttrs2, GAttrs3, true),
+    select_nvpair(directed=Directed, GAttrs2, GAttrs3, true),
     select_nvpair(name=GName, GAttrs3, GAttrs4, noname),
     add_default_nvpair(GAttrs4, overlap, false, GAttrs5),
     I = 0
@@ -195,26 +194,28 @@ gv_graph(graph(VTerms, RankedVTerms, ETerms, GAttrs1)) -->
   % States that this file represents a graph according to the GraphViz format.
   indent(I),
   gv_strict(Strict),
-  gv_graph_type(Directedness), ` `,
+  gv_graph_type(Directed), ` `,
   gv_id(GName), ` `,
+
+  % The body of the DOT file appears between curly braces.
   bracketed(
     curly,
     gv_graph0(
       I,
       NewVTerms, SharedVAttrs, RankedVTerms,
       NewETerms, SharedEAttrs,
-      Directedness, GAttrs5
+      Directed, GAttrs5
     )
-  ),                                                      
-  newline.
+  ),
+  line_feed.
 
 gv_graph0(
   I,
   NewVTerms, SharedVAttrs, RankedVTerms,
   NewETerms, SharedEAttrs,
-  Directedness, GAttrs
+  Directed, GAttrs
 ) -->
-  newline,
+  line_feed,
 
   % The following lines are indented.
   {NewI is I + 1},
@@ -228,17 +229,29 @@ gv_graph0(
   % Attributes that are the same for all edges.
   gv_generic_attributes_statement(edge, NewI, GAttrs, SharedEAttrs),
 
-  % Only add a newline if some content was written in the previous three
-  % lines.
-  ({(GAttrs == [], SharedVAttrs == [], SharedEAttrs == [])} -> `` ; newline),
+  % Only add a line_feed if some content was already written
+  % and some content is about to be written.
+  (
+    {
+      % Succeeds if no content was written.
+      (GAttrs == [], SharedVAttrs == [], SharedEAttrs == [])
+    ;
+      % Succeeds if no content is about to be written.
+      (NewVTerms == [], RankedVTerms == [])
+    }
+  ->
+    ``
+  ;
+    line_feed
+  ),
 
   % The list of GraphViz nodes.
-  '*'(gv_node_statement(NewI, GAttrs), NewVTerms),
-  ({NewVTerms == []} -> `` ; newline),
+  '*'(gv_node_statement(NewI, GAttrs), NewVTerms, []),
+  ({NewVTerms == []} -> `` ; line_feed),
 
   % The ranked GraphViz nodes (displayed at the same height).
-  '*'(gv_ranked_node_collection(NewI, GAttrs), RankedVTerms),
-  ({RankedVTerms == []} -> `` ; newline),
+  '*'(gv_ranked_node_collection(NewI, GAttrs), RankedVTerms, []),
+  ({RankedVTerms == []} -> `` ; line_feed),
 
   {
     findall(
@@ -254,18 +267,18 @@ gv_graph0(
   },
 
   % The rank edges.
-  '*'(gv_edge_statement(NewI, Directedness, GAttrs), RankEdges),
+  '*'(gv_edge_statement(NewI, Directed, GAttrs), RankEdges, []),
 
   % The non-rank edges.
-  '*'(gv_edge_statement(NewI, Directedness, GAttrs), NewETerms),
+  '*'(gv_edge_statement(NewI, Directed, GAttrs), NewETerms, []),
 
-  % Note that we do not include a newline here.
+  % Note that we do not include a line_feed here.
 
   % We want to indent the closing curly brace.
   indent(I).
 
 
-%! gv_graph_type(+Directedness:boolean)// .
+%! gv_graph_type(+Directed:boolean)// .
 % The type of graph that is represented.
 
 gv_graph_type(false) --> `graph`.
@@ -380,15 +393,15 @@ gv_node_id(Id) -->
 gv_node_statement(I, GraphAttrs, vertex(Id,_,VAttrs)) -->
   indent(I),
   gv_node_id(Id), ` `,
-  gv_attribute_list(node, GraphAttrs, VAttrs), newline.
+  gv_attribute_list(node, GraphAttrs, VAttrs), line_feed.
 
 
 gv_port -->
   gv_port_location,
-  '?'(gv_port_angle).
+  '?'(gv_port_angle, []).
 gv_port -->
   gv_port_angle,
-  '?'(gv_port_location).
+  '?'(gv_port_location, []).
 gv_port -->
   `:`,
   gv_compass_pt(_).
@@ -438,18 +451,22 @@ gv_ranked_node_collection(
 ) -->
   indent(I),
   bracketed(curly, (
-    newline,
+    line_feed,
 
     % The rank attribute.
     {NewI is I + 1},
-    indent(NewI), gv_attribute(rank=same), `;`, newline,
+    indent(NewI), gv_attribute(rank=same), `;`, line_feed,
 
-    '*'(gv_node_statement(NewI, GraphAttrs), [Rank_V_Term|Content_V_Terms]),
-
+    '*'(
+      gv_node_statement(NewI, GraphAttrs),
+      [Rank_V_Term|Content_V_Terms],
+      []
+    ),
+    
     % We want to indent the closing curly brace.
     indent(I)
   )),
-  newline.
+  line_feed.
 
 
 %! gv_strict(+Strict:boolean)// is det.
