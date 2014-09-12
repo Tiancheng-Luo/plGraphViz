@@ -30,7 +30,6 @@ and GraphViz output files or SVG DOM structures.
 
 :- use_module(library(option)).
 :- use_module(library(process)).
-:- use_module(library(predicate_options)). % Declarations.
 
 :- use_module(generics(codes_ext)).
 :- use_module(generics(db_ext)).
