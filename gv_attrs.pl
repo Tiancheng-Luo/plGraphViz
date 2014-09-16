@@ -21,7 +21,7 @@
 :- use_module(os(file_ext)).
 
 :- use_module(plDcg(dcg_content)).
-:- use_module(plDcg(dcg_generic)).
+:- use_module(plDcg(dcg_generics)).
 
 :- use_module(plHtml(html)).
 :- use_module(plHtml(html_table)).
