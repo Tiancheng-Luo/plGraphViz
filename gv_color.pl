@@ -13,7 +13,7 @@
 @author Wouter Beek
 @tbd Color value `transparent` is only available in the output formats
      ps, svg, fig, vmrl, and the bitmap formats.
-@version 2014/06
+@version 2014/06, 2014/10
 */
 
 :- use_module(library(apply)).
@@ -31,8 +31,6 @@
 
 :- use_module(plHtml(html)).
 :- use_module(plHtml(html_table)).
-
-:- use_module(plSparql_parse(sparql_char)).
 
 :- db_add_novel(user:prolog_file_type(log, logging)).
 
