@@ -149,8 +149,9 @@ file_to_gv(FromFile, ToFile, Options):-
   % Run the GraphViz conversion command in the shell.
   format(atom(OutputType), '-T~w', [ToExtension]),
   process_create(
-    %%%%path(Method),
-    'C:\\Program Files (x86)\\Graphviz2.38\\bin\\dot.exe',
+    path(Method),
+    % @tbd Windows hack:
+    %%%%'C:\\Program Files (x86)\\Graphviz2.38\\bin\\dot.exe',
     [OutputType,FromFile,'-o',ToFile],
     [process(PID)]
   ),
