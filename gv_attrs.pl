@@ -2,15 +2,17 @@
   gv_attrs,
   [
     gv_attr/3 % +Context:oneof([cluster,edge,graph,node,subgraph])
-              % +Attr1:nvpair
-              % +Attr2:nvpair
+              % +Attribute1:nvpair
+              % -Attribute2:nvpair
   ]
 ).
 
-/** <module> GraphViz attributes v2
+/** <module> GraphViz: Attributes
+
+Support for GraphViz attributes.
 
 @author Wouter Beek
-@version 2014/06
+@version 2014/06, 2014/11
 */
 
 :- use_module(library(apply)).
@@ -54,23 +56,39 @@
 
 
 
+%! gv_attr(
+%!   +Context:oneof([cluster,edge,graph,node,subgraph]),
+%!   +Attribute1:nvpair,
+%!   +Attribute2:nvpair
+%! ) is det.
+% Uses the default value in case Value is uninstantiated.
+% Otherwise, performs a typecheck and converts the given value.
+
 gv_attr(Context, N=V, N=V):-
   var(V), !,
   gv_attr(N, UsedBy, _, V, _, _),
+  % Check validity of context.
   memberchk(Context, UsedBy).
 gv_attr(Context, N=V1, N=V2):-
-  gv_attr(N, UsedBy, Types, _, Minimum, _),
+  gv_attr(N2, UsedBy, Types, _, Minimum, _),
+  % Check validity of context.
   memberchk(Context, UsedBy),
+  % Check validity of value type.
   member(Type, Types),
-  (
-    Type == style
-  ->
-    Dcg =.. [Type,Context,V1]
-  ;
-    Dcg =.. [Type,V1]
+  (   Type == style
+  ->  Dcg =.. [Type,Context,V1]
+  ;   Dcg =.. [Type,V1]
   ),
   once(dcg_phrase(Dcg, V2)),
+  % Check validity of Value w.r.t. minimum value -- if available.
   check_minimum(V1, Minimum).
+
+
+
+% HELPERS
+
+%! check_minimum(+Value:atom, +Minimum:number) is semidet.
+% Trivially succeeds if no minimum value is available for a given attribute.
 
 check_minimum(_, ''):- !.
 check_minimum(V, Min1):-
