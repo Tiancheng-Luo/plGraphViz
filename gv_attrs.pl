@@ -21,6 +21,7 @@ Support for GraphViz attributes.
 
 :- use_module(generics(db_ext)).
 :- use_module(os(file_ext)).
+:- use_module(os(file_gnu)).
 
 :- use_module(plDcg(dcg_content)).
 :- use_module(plDcg(dcg_generics)).

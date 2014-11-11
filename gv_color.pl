@@ -17,12 +17,13 @@
 */
 
 :- use_module(library(apply)).
-:- use_module(library(lists)).
+:- use_module(library(lists), except([delete/3])).
 :- use_module(library(persistency)).
 :- use_module(library(xpath)).
 
 :- use_module(generics(db_ext)).
 :- use_module(os(file_ext)).
+:- use_module(os(file_gnu)).
 
 :- use_module(plDcg(dcg_abnf)).
 :- use_module(plDcg(dcg_cardinal)).
