@@ -7,12 +7,3 @@
 [submodule "plDcg"]
 	path = plDcg
 	url = https://github.com/wouterbeek/plDcg.git
-[submodule "plSvg"]
-	path = plSvg
-	url = https://github.com/wouterbeek/plSvg.git
-[submodule "plHttp"]
-	path = plHttp
-	url = https://github.com/wouterbeek/plHttp.git
-[submodule "plUri"]
-	path = plUri
-	url = https://github.com/wouterbeek/plUri.git
