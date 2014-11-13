@@ -9,8 +9,6 @@
     plc-'Prolog-Library-Collection',
     plDcg,
     plHtml,
-    plHttp,
-    plSvg,
     plUri
 ]).
 

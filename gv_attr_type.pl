@@ -51,6 +51,7 @@
 
 :- use_module(plDcg(dcg_abnf)).
 :- use_module(plDcg(dcg_ascii)).
+:- use_module(plDcg(dcg_atom)).
 :- use_module(plDcg(dcg_cardinal)).
 :- use_module(plDcg(dcg_content)).
 

@@ -23,6 +23,7 @@ Support for GraphViz attributes.
 :- use_module(os(file_ext)).
 :- use_module(os(file_gnu)).
 
+:- use_module(plDcg(dcg_atom)).
 :- use_module(plDcg(dcg_content)).
 :- use_module(plDcg(dcg_generics)).
 
@@ -71,7 +72,7 @@ gv_attr(Context, N=V, N=V):-
   % Check validity of context.
   memberchk(Context, UsedBy).
 gv_attr(Context, N=V1, N=V2):-
-  gv_attr(N2, UsedBy, Types, _, Minimum, _),
+  gv_attr(N, UsedBy, Types, _, Minimum, _),
   % Check validity of context.
   memberchk(Context, UsedBy),
   % Check validity of value type.

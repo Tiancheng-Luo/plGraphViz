@@ -9,32 +9,32 @@
 
 Grammar taken from the GraphViz Web site:
 
-~~~{.txt}
-label 	: 	text
-	| 	table
-text 	: 	textitem
-	| 	text textitem
-textitem 	: 	string
-	| 	<BR/>
-	| 	<FONT> text </FONT>
-	| 	<I> text </I>
-	| 	<B> text </B>
-	| 	<U> text </U>
-	| 	<O> text </O>
-	| 	<SUB> text </SUB>
-	| 	<SUP> text </SUP>
-	| 	<S> text </S>
-table 	: 	[ <FONT> ] <TABLE> rows </TABLE> [ </FONT> ]
-rows 	: 	row
-	| 	rows row
-	| 	rows <HR/> row
-row 	: 	<TR> cells </TR>
-cells 	: 	cell
-	| 	cells cell
-	| 	cells <VR/> cell
-cell 	: 	<TD> label </TD>
-	| 	<TD> <IMG/> </TD>
-~~~
+```
+label :   text
+        | table
+text :   textitem
+       | text textitem
+textitem :   string
+           | <BR/>
+           | <FONT> text </FONT>
+           | <I> text </I>
+           | <B> text </B>
+           | <U> text </U>
+           | <O> text </O>
+           | <SUB> text </SUB>
+           | <SUP> text </SUP>
+           | <S> text </S>
+table : [ <FONT> ] <TABLE> rows </TABLE> [ </FONT> ]
+rows :   row
+       | rows row
+       | rows <HR/> row
+row: <TR> cells </TR>
+cells :   cell
+        | cells cell
+        | cells <VR/> cell
+cell:   <TD> label </TD>
+      | <TD> <IMG/> </TD>
+```
 
 @author Wouter Beek
 @see http://www.graphviz.org/content/node-shapes#html
@@ -42,6 +42,7 @@ cell 	: 	<TD> label </TD>
 */
 
 :- use_module(plDcg(dcg_abnf)).
+:- use_module(plDcg(dcg_bracket)).
 :- use_module(plDcg(dcg_content)).
 
 :- use_module(plHtml(html_dcg)).
@@ -56,7 +57,7 @@ gv_html_like_label(Content) -->
 
 %! cell(?Contents:compound)// .
 % Supported attributes for TD:
-% ~~~{.txt}
+% ```
 % ALIGN="CENTER|LEFT|RIGHT|TEXT"
 % BALIGN="CENTER|LEFT|RIGHT"
 % BGCOLOR="color"
@@ -79,13 +80,13 @@ gv_html_like_label(Content) -->
 % TOOLTIP="value"
 % VALIGN="MIDDLE|BOTTOM|TOP"
 % WIDTH="value"
-% ~~~
+% ```
 %
 % Supported attributes for IMG:
-% ~~~{.txt}
+% ```
 % SCALE="FALSE|TRUE|WIDTH|HEIGHT|BOTH"
 % SRC="value"
-% ~~~
+% ```
 
 cell(td(Contents)) -->
   html_element(td, [], label(Contents)).
@@ -125,7 +126,7 @@ row(tr(Contents)) -->
 
 rows([H|T]) -->
   row(H),
-  rows.
+  rows(T).
 rows([H,hr|T]) -->
   row(H),
   html_element(hr),
@@ -136,7 +137,7 @@ rows([H]) -->
 
 %! table(?Contents:compound)// .
 % Supported attributes for TABLE:
-% ~~~{.txt}
+% ```
 % ALIGN="CENTER|LEFT|RIGHT"
 % BGCOLOR="color"
 % BORDER="value"
@@ -159,14 +160,14 @@ rows([H]) -->
 % TOOLTIP="value"
 % VALIGN="MIDDLE|BOTTOM|TOP"
 % WIDTH="value"
-% ~~~
+% ```
 %
 % Supported attributes for FONT:
-% ~~~{.txt}
+% ```
 % COLOR="color"
 % FACE="fontname"
 % POINT-SIZE="value"
-% ~~~
+% ```
 
 table(table(Attrs,Contents)) -->
   html_element(table, Attrs, rows(Contents)).
@@ -182,9 +183,9 @@ text(Contents) -->
 
 %! textitem(?Content)// .
 % Supported attributes for BR:
-% ~~~{.txt}
+% ```
 % ALIGN="CENTER|LEFT|RIGHT"
-% ~~~
+% ```
 
 textitem(string(String)) -->
   html_string(String).

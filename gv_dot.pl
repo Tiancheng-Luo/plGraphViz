@@ -23,10 +23,13 @@ In GraphViz vertices are called 'nodes'.
 :- use_module(library(ordsets)).
 
 :- use_module(plDcg(dcg_abnf)).
+:- use_module(plDcg(dcg_arrow)).
 :- use_module(plDcg(dcg_ascii)).
+:- use_module(plDcg(dcg_bracket)).
 :- use_module(plDcg(dcg_content)).
 :- use_module(plDcg(dcg_generics)).
 :- use_module(plDcg(dcg_meta)).
+:- use_module(plDcg(dcg_quote)).
 
 :- use_module(plGraphViz(gv_attrs)).
 :- use_module(plGraphViz(gv_html)).
@@ -47,10 +50,10 @@ gv_attribute(Name=Val) -->
 %!   +GraphAttributes:list(nvpair),
 %!   +Attributes:list(nvpair)
 %! )// .
-% ~~~{.abnf}
+% ```abnf
 % attr_list = "[" [a_list] "]" [attr_list]
 % a_list = ID "=" ID [","] [a_list]
-% ~~~
+% ```
 
 % Attributes occur between square brackets.
 gv_attribute_list(Context, _, Attrs1) -->
@@ -59,9 +62,9 @@ gv_attribute_list(Context, _, Attrs1) -->
 
 
 %! gv_compass_pt(+Direction:oneof(['_',c,e,n,ne,nw,s,se,sw,w]))// .
-% ~~~
+% ```
 % compass_pt : (n | ne | e | se | s | sw | w | nw | c | _)
-% ~~~
+% ```
 
 gv_compass_pt('_') --> "_".
 gv_compass_pt(c) --> "c".
@@ -133,9 +136,9 @@ gv_edge_statement(I, Directed, GAttrs, edge(FromId,ToId,EAttrs)) -->
 % @arg GraphAttributes A list of name-value pairs.
 % @arg CategoryAttributes A list of name-value pairs.
 %
-% ~~~
+% ```
 % attr_stmt = (graph / node / edge) attr_list
-% ~~~
+% ```
 
 gv_generic_attributes_statement(_, _, _, []) --> [], !.
 gv_generic_attributes_statement(Kind, I, GraphAttrs, KindAttrs) -->
@@ -156,19 +159,19 @@ gv_generic_attributes_statement(Kind, I, GraphAttrs, KindAttrs) -->
 %      they are ignored in the input file.
 %      Only in combinattion with directionality `directed`.
 %
-% ~~~{.abnf}
+% ```abnf
 % graph = ["strict"] ("graph" / "digraph") [ID] "{" stmt_list "}"
-% ~~~
+% ```
 %
 % `GraphTerm` is a compound term of the following form:
-% ~~~{.pl}
+% ```prolog
 % graph(VertexTerms,RankedVertexTerms,EdgeTerms,GraphAttributes)
-% ~~~
+% ```
 %
 % `RankedVertexTerms` is a list of compound terms of the following form:
-% ~~~{.pl}
+% ```prolog
 % rank(RankNode,ContentNodes)
-% ~~~
+% ```
 %
 % @tbd Add support for subgraphs (arbitrary nesting).
 % @tbd Add support for escape strings:
@@ -307,7 +310,7 @@ gv_graph_type(true) --> "digraph".
 % HTML strings (variant 4).
 gv_id(Content) -->
   {compound(Content)}, !,
-  gv_html_like_label, Content).
+  gv_html_like_label(Content).
 % Alpha-numeric strings (variant 1).
 gv_id(Atom) -->
   {atom_codes(Atom, [H|T])},
@@ -331,14 +334,16 @@ gv_id(Atom) -->
 % Double-quoted strings (variant 3).
 % The quotes are not in the given atom. They are written anyway.
 gv_id(Atom) -->
-  quoted(double_quote, dcg_atom_codes(gv_quoted_string, Atom)), !.
+  quoted(dcg_atom_codes(gv_quoted_string, Atom)), !.
 
-gv_id_first(X) --> ascii_letter(X).
+gv_id_first(X) --> letter(X).
 gv_id_first(X) --> underscore(X).
 
 gv_id_rest([]) --> [].
 gv_id_rest([H|T]) -->
-  (ascii_alpha_numeric(H) ; underscore(H)),
+  (   alpha_numeric(H)
+  ;   underscore(H)
+  ),
   gv_id_rest(T).
 
 
@@ -463,7 +468,7 @@ gv_ranked_node_collection(
       [Rank_V_Term|Content_V_Terms],
       []
     ),
-    
+
     % We want to indent the closing curly brace.
     indent(I)
   )),
