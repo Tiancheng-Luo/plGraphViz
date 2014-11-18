@@ -25,11 +25,11 @@
 :- use_module(os(file_ext)).
 :- use_module(os(file_gnu)).
 
+:- use_module(plDcg(abnf_core_rules)).
 :- use_module(plDcg(dcg_abnf)).
 :- use_module(plDcg(dcg_atom)).
 :- use_module(plDcg(dcg_cardinal)).
 :- use_module(plDcg(dcg_content)).
-:- use_module(plDcg_rfc(rfc2616_basic)).
 
 :- use_module(plHtml(html)).
 :- use_module(plHtml(html_table)).
