@@ -9,9 +9,6 @@
     gif_to_gv_file/3, % +GraphInterchangeFormat:compound
                       % ?ToFile:atom
                       % +Options:list(nvpair)
-    gif_to_svg_dom/3, % +GraphInterchangeFormat:compound
-                      % -SvgDom:list(compound)
-                      % +Options:list(nvpair)
     open_dot/1 % +File:file
   ]
 ).
@@ -30,13 +27,11 @@ and GraphViz output files or SVG DOM structures.
 
 :- use_module(library(option)).
 :- use_module(library(process)).
-:- use_module(library(predicate_options)). % Declarations.
 
-:- use_module(generics(codes_ext)).
+:- use_module(generics(code_ext)).
 :- use_module(generics(db_ext)).
 :- use_module(os(file_ext)).
 :- use_module(os(run_ext)).
-:- use_module(svg(svg_file)).
 
 :- use_module(plGraphViz(gv_dot)).
 
@@ -136,15 +131,12 @@ file_to_gv(FromFile, ToFile, Options):-
   prolog_file_type(ToExtension, graphviz_output), !,
 
   % The output file is either given or created.
-  (
-    var(ToFile)
-  ->
-    user:prolog_file_type(ToExtension, ToFileType),
-    file_alternative(FromFile, _, _, ToExtension, ToFile)
-  ;
-    is_absolute_file_name(ToFile),
-    % The given output file must match a certain file extension.
-    file_name_extension(_, ToExtension, ToFile)
+  (   var(ToFile)
+  ->  user:prolog_file_type(ToExtension, ToFileType),
+      file_alternative(FromFile, _, _, ToExtension, ToFile)
+  ;   is_absolute_file_name(ToFile),
+      % The given output file must match a certain file extension.
+      file_name_extension(_, ToExtension, ToFile)
   ),
   % Now that we have the output file we can prevent the
   % file type / file extension translation predicates from bakctracking.
@@ -154,6 +146,8 @@ file_to_gv(FromFile, ToFile, Options):-
   format(atom(OutputType), '-T~w', [ToExtension]),
   process_create(
     path(Method),
+    % @tbd Windows hack:
+    %%%%'C:\\Program Files (x86)\\Graphviz2.38\\bin\\dot.exe',
     [OutputType,FromFile,'-o',ToFile],
     [process(PID)]
   ),
@@ -175,20 +169,6 @@ file_to_gv(FromFile, ToFile, Options):-
 gif_to_gv_file(Gif, ToFile, Options):-
   once(phrase(gv_graph(Gif), Codes)),
   codes_to_gv_file(Codes, ToFile, Options).
-
-
-%! gif_to_svg_dom(
-%!   +GraphInterchangeFormat:compound,
-%!   -SvgDom:list(compound),
-%!   +Options:list(nvpair)
-%! ) is det.
-
-gif_to_svg_dom(Gif, SvgDom, Options1):-
-  % Make sure the file type of the output file is SvgDom.
-  merge_options([to_file_type=svg], Options1, Options2),
-  gif_to_gv_file(Gif, ToFile, Options2),
-  file_to_svg(ToFile, SvgDom),
-  delete_file(ToFile).
 
 
 %! open_dot(+File:atom) is det.

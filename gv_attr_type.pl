@@ -46,10 +46,12 @@
 /** <module> GraphViz attribute types
 
 @author Wouter Beek
-@version 2014/06
+@version 2014/06, 2014/11
 */
 
 :- use_module(plDcg(dcg_abnf)).
+:- use_module(plDcg(dcg_ascii)).
+:- use_module(plDcg(dcg_atom)).
 :- use_module(plDcg(dcg_cardinal)).
 :- use_module(plDcg(dcg_content)).
 
@@ -97,7 +99,7 @@ gv_attr_type(viewPort).
 % An *addDouble* is represented by a Prolog float.
 
 addDouble(Float) -->
-  '?'(`+`, []),
+  '?'(plus_sign, []),
   double(Float).
 
 
@@ -106,7 +108,7 @@ addDouble(Float) -->
 % `point(X:float,Y:float,InputOnly:boolean)`.
 
 addPoint(Point) -->
-  '?'(`+`, []),
+  '?'(plus_sign, []),
   point(Point).
 
 
@@ -147,10 +149,10 @@ backwards_compatible(invempty).
 backwards_compatible(open).
 
 
-bool(false) --> `false`.
-bool(false) --> `no`.
-bool(true) --> `true`.
-bool(true) --> `yes`.
+bool(false) --> "false".
+bool(false) --> "no".
+bool(true) --> "true".
+bool(true) --> "yes".
 
 
 %! clusterMode(+ClusterMode:atom)// .
@@ -187,7 +189,7 @@ doubleList([H|T]) -->
   '*'(doubleList1, T, []).
 
 doubleList1(Float) -->
-  `:`,
+  ":",
   double(Float).
 
 
@@ -242,16 +244,16 @@ pagedir('TR').
 
 %! point(+Point:compound)// .
 % A *point* is represented by a compound of the following form:
-% `point(X:float,Y:float,InputOnly:boolean)`.
+% `point(X:float,Y:float,Changeable:boolean)`.
 
-point(point(X,Y,InputOnly)) -->
+point(point(X,Y,Changeable)) -->
   float(X),
-  `,`,
+  ",",
   float(Y),
-  input_only(InputOnly).
+  input_changeable(Changeable).
 
-input_only(false) --> [].
-input_only(true) --> `!`.
+input_changeable(false) --> "".
+input_changeable(true) --> "!".
 
 
 pointList(Points) -->
@@ -292,9 +294,9 @@ rankdir('TB').
 
 
 rect(rect(LowerLeftX,LowerLeftY,UpperRightX,UpperRightY)) -->
-  float(LowerLeftX), `,`,
-  float(LowerLeftY), `,`,
-  float(UpperRightX), `,`,
+  float(LowerLeftX), ",",
+  float(LowerLeftY), ",",
+  float(UpperRightX), ",",
   float(UpperRightY).
 
 
@@ -414,4 +416,3 @@ style(node, wedged).
 
 
 % @tbd viewPort
-

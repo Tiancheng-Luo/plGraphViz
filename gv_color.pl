@@ -13,26 +13,26 @@
 @author Wouter Beek
 @tbd Color value `transparent` is only available in the output formats
      ps, svg, fig, vmrl, and the bitmap formats.
-@version 2014/06
+@version 2014/06, 2014/10-2014/11
 */
 
 :- use_module(library(apply)).
-:- use_module(library(lists)).
+:- use_module(library(lists), except([delete/3])).
 :- use_module(library(persistency)).
 :- use_module(library(xpath)).
 
 :- use_module(generics(db_ext)).
 :- use_module(os(file_ext)).
+:- use_module(os(file_gnu)).
 
+:- use_module(plDcg(abnf_core_rules)).
 :- use_module(plDcg(dcg_abnf)).
+:- use_module(plDcg(dcg_atom)).
 :- use_module(plDcg(dcg_cardinal)).
 :- use_module(plDcg(dcg_content)).
-:- use_module(plDcg_rfc(rfc2616_basic)).
 
 :- use_module(plHtml(html)).
 :- use_module(plHtml(html_table)).
-
-:- use_module(plSparql_parse(sparql_char)).
 
 :- db_add_novel(user:prolog_file_type(log, logging)).
 
@@ -51,10 +51,10 @@
 %   3. `hsv(Hue:between(0.0,1.0),Saturation:between(0.0,1.0),Value:between(0.0,1.0))`
 
 color(rgb(Red,Green,Blue)) --> !,
-  `#`,
+  "#",
   '#'(3, hex_color, [Red,Green,Blue], []).
 color(rgbs(Red,Green,Blue,Alpha)) --> !,
-  `#`,
+  "#",
   '#'(4, hex_color, [Red,Green,Blue,Alpha], []).
 color(hsv(Hue,Saturation,Value)) --> !,
   '#'(3, hsv_color, [Hue,Saturation,Value], []).
@@ -82,7 +82,7 @@ wc(Color-Float) -->
   '?'(wc_weight(Float), []).
 
 wc_weight(Float) -->
-  `;`,
+  ";",
   float(Float).
 
 
