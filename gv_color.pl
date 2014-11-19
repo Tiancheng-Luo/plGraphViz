@@ -142,13 +142,3 @@ gv_color_update(_):-
 
 gv_color_url('http://www.graphviz.org/doc/info/colors.html').
 
-
-%! safe_db_attach(+File:atom) is det.
-
-safe_db_attach(File):-
-  exists_file(File), !,
-  db_attach(File, []).
-safe_db_attach(File):-
-  touch_file(File),
-  safe_db_attach(File).
-
