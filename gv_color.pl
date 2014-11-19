@@ -22,6 +22,7 @@
 :- use_module(library(xpath)).
 
 :- use_module(generics(db_ext)).
+:- use_module(generics(persistent_db_ext)).
 :- use_module(os(file_ext)).
 :- use_module(os(file_gnu)).
 
@@ -121,9 +122,7 @@ gv_color_file(File):-
 
 gv_color_init:-
   gv_color_file(File),
-  safe_db_attach(File),
-  file_age(File, Age),
-  gv_color_update(Age).
+  persistent_db_init(File, gv_color_update).
 
 
 %! gv_color_update(+Age:float) is det.
