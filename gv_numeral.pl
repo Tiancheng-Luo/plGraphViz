@@ -61,7 +61,7 @@ gv_numeral(N) -->
   }.
 gv_numeral(N) -->
   {number_sign_parts(N, Sign, UnsignedN)},
-  sign(Sign),
+  sign_negative(Sign),
   {number_integer_parts(UnsignedN, IntegerPart, Fractional)},
   (   % [1] The fractional is zero, so only write the integer part
       %     and do not write the decimal separator.
