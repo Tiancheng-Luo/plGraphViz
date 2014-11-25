@@ -3,6 +3,40 @@ plGraphViz
 
 Easily export graphs represented as Prolog terms to
  [GraphViz](http://www.graphviz.org/).
+The Prolog terms have the following form:
+
+~~~prolog
+graph(Vertices, Edges, GraphAttrs)
+~~~
+
+`Vertices` and `Edges` are lists of compounds terms of
+ the following form:
+
+~~~prolog
+vertex(Id, VertexAttrs)
+edges(FromId, ToId, EdgeAttrs)
+~~~
+
+`Id` identifies a vertex and need not occur in any of the edges
+ (i.e., unconnected vertices are allowed).
+`FromId` and `ToId` may occur in the list of vertices,
+ in order to draw an edge between vertices with set attributes.
+
+Attributes have the form `Name=Value`.
+`GraphAttrs` are attributes of the graph.
+`VertexAttrs` are attributes of the vertex.
+`EdgeAttrs` are attributes of the edge.
+
+Attribute values are given as Prolog terms as well,
+ and are type-checked before exporting.
+Many of the GraphViz attributes are supported.
+New ones are added on an as-needed bases
+ (open an issue on Github if you want to see a specific feature added).
+Supports HTML-like labels, allowing complex tables to be shown
+ inside vertices.
+Support for vertex clusters is currently under way.
+
+---
 
 ### Example
 
@@ -17,14 +51,14 @@ $ swipl run.pl
    File = 'PATH/plGraphViz/data/tmp.png'
 ~~~
 
+![](https://raw.githubusercontent.com/wouterbeek/plGraphViz/master/example1.png "Example graph.")
+
 The graphic can be saved to a different file by instantiating
  the `File` argument.
 
-![](https://raw.githubusercontent.com/wouterbeek/plGraphViz/master/example1.png "Example graph.")
-
 ---
 
-### Method option
+### 'Method' option
 
 Option `method(+atom)` sets the drawing method that is used by GraphViz
  to place the vertices and edges.
@@ -41,7 +75,7 @@ The following values are supported.
 
 ---
 
-### Output type option
+### 'Output' option
 
 Option `output(+atom)` sets the type of file the graph is written to.
 The following values are supported.
