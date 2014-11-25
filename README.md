@@ -38,6 +38,14 @@ Support for vertex clusters is currently under way.
 
 ---
 
+### Installation
+
+~~~shell
+$ git clone https://github.com/wouterbeek/plGraphViz.git
+$ cd plGraphViz
+$ git submodule update --init
+~~~
+
 ### Example
 
 ~~~prolog
