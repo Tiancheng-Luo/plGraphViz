@@ -13,9 +13,16 @@ Methods for writing to the GraphViz DOT format.
 
 In GraphViz vertices are called 'nodes'.
 
+~~~abnf
+attr_list = "[" [a_list] "]" [attr_list]
+a_list = ID "=" ID [","] [a_list]
+~~~
+
+---
+
 @author Wouter Beek
 @see http://www.graphviz.org/content/dot-language
-@version 2013/07, 2013/09, 2014/03-2014/06
+@version 2013/07, 2013/09, 2014/03-2014/06, 2014/11
 */
 
 :- use_module(library(apply)).
@@ -37,28 +44,21 @@ In GraphViz vertices are called 'nodes'.
 
 
 
-%! gv_attribute(+Attribute:nvpair)// is det.
+
+
+%! gv_attr(
+%!   +Context:oneof([edge,graph,node]),
+%!   +Attribute:nvpair
+%! )// is det.
 % A single GraphViz attribute.
 % We assume that the attribute has already been validated.
 
-gv_attribute(Name=Val) -->
-  gv_id(Name), "=", gv_id(Val), ";".
+gv_attr(Context, Name=Value) -->
+  gv_id(Name),
+  "=",
+  gv_attr_value(Context, Name=Value),
+  ";".
 
-
-%! gv_attribute_list(
-%!   +Context:oneof([cluster,edge,graph,node,subgraph]),
-%!   +GraphAttributes:list(nvpair),
-%!   +Attributes:list(nvpair)
-%! )// .
-% ```abnf
-% attr_list = "[" [a_list] "]" [attr_list]
-% a_list = ID "=" ID [","] [a_list]
-% ```
-
-% Attributes occur between square brackets.
-gv_attribute_list(Context, _, Attrs1) -->
-  {maplist(gv_attr(Context), Attrs1, Attrs2)},
-  bracketed(square, '*'(gv_attribute, Attrs2, [])).
 
 
 %! gv_compass_pt(+Direction:oneof(['_',c,e,n,ne,nw,s,se,sw,w]))// .
@@ -78,6 +78,7 @@ gv_compass_pt(sw) --> "sw".
 gv_compass_pt(w) --> "w".
 
 
+
 %! gv_edge_operator(+Directed:boolean)// .
 % The binary edge operator between two vertices.
 % The operator that is used depends on whether the graph is directed or
@@ -90,10 +91,10 @@ gv_edge_operator(false) --> !, "--".
 gv_edge_operator(true) --> arrow(right, 2).
 
 
+
 %! gv_edge_statement(
 %!   +Indent:nonneg,
 %!   +Directed:boolean,
-%!   +GraphAttributes:list(nvpair),
 %!   +EdgeTerm:compound
 %! )// is det.
 % A GraphViz statement describing an edge.
@@ -108,7 +109,7 @@ gv_edge_operator(true) --> arrow(right, 2).
 %      at the from and/or to location.
 % @tbd Add support for multiple, consecutive occurrences of gv_edge_rhs//2.
 
-gv_edge_statement(I, Directed, GAttrs, edge(FromId,ToId,EAttrs)) -->
+gv_edge_statement(I, Directed, edge(FromId,ToId,EAttrs)) -->
   indent(I),
   gv_node_id(FromId), " ",
 
@@ -118,14 +119,14 @@ gv_edge_statement(I, Directed, GAttrs, edge(FromId,ToId,EAttrs)) -->
 
   % We want `colorscheme/1` from the edges and
   % `directionality/1` from the graph.
-  gv_attribute_list(edge, GAttrs, EAttrs),
+  bracketed(square, '*'(gv_attr(edge), EAttrs, [])),
   line_feed.
+
 
 
 %! gv_generic_attributes_statement(
 %!   +Kind:oneof([edge,graph,node]),
 %!   +Indent:integer,
-%!   +GraphAttributes:list(nvpair),
 %!   +CategoryAttributes:list(nvpair)
 %! )//
 % A GraphViz statement describing generic attributes for a category of items.
@@ -140,11 +141,13 @@ gv_edge_statement(I, Directed, GAttrs, edge(FromId,ToId,EAttrs)) -->
 % attr_stmt = (graph / node / edge) attr_list
 % ```
 
-gv_generic_attributes_statement(_, _, _, []) --> [], !.
-gv_generic_attributes_statement(Kind, I, GraphAttrs, KindAttrs) -->
+gv_generic_attributes_statement(_, _, []) --> [], !.
+gv_generic_attributes_statement(Kind, I, KindAttrs) -->
   indent(I),
   gv_kind(Kind), " ",
-  gv_attribute_list(Kind, GraphAttrs, KindAttrs), line_feed.
+  bracketed(square, '*'(gv_attr(Kind), KindAttrs, [])),
+  line_feed.
+
 
 
 %! gv_graph(+Gif:compound)//
@@ -224,13 +227,13 @@ gv_graph0(
   {NewI is I + 1},
 
   % Attributes that apply to the graph as a whole.
-  gv_generic_attributes_statement(graph, NewI, GAttrs, GAttrs),
+  gv_generic_attributes_statement(graph, NewI, GAttrs),
 
   % Attributes that are the same for all nodes.
-  gv_generic_attributes_statement(node, NewI, GAttrs, SharedVAttrs),
+  gv_generic_attributes_statement(node, NewI, SharedVAttrs),
 
   % Attributes that are the same for all edges.
-  gv_generic_attributes_statement(edge, NewI, GAttrs, SharedEAttrs),
+  gv_generic_attributes_statement(edge, NewI, SharedEAttrs),
 
   % Only add a line_feed if some content was already written
   % and some content is about to be written.
@@ -249,19 +252,19 @@ gv_graph0(
   ),
 
   % The list of GraphViz nodes.
-  '*'(gv_node_statement(NewI, GAttrs), NewVTerms, []),
+  '*'(gv_node_statement(NewI), NewVTerms, []),
   ({NewVTerms == []} -> "" ; line_feed),
 
   % The ranked GraphViz nodes (displayed at the same height).
-  '*'(gv_ranked_node_collection(NewI, GAttrs), RankedVTerms, []),
+  '*'(gv_ranked_node_collection(NewI), RankedVTerms, []),
   ({RankedVTerms == []} -> "" ; line_feed),
 
   {
     findall(
       edge(FromId,ToId,[]),
       (
-        nth0(Index1, RankedVTerms, rank(vertex(FromId,_,_),_)),
-        nth0(Index2, RankedVTerms, rank(vertex(ToId,_,_),_)),
+        nth0(Index1, RankedVTerms, rank(vertex(FromId,_),_)),
+        nth0(Index2, RankedVTerms, rank(vertex(ToId,_),_)),
         % We assume that the rank vertices are nicely ordered.
         succ(Index1, Index2)
       ),
@@ -270,10 +273,10 @@ gv_graph0(
   },
 
   % The rank edges.
-  '*'(gv_edge_statement(NewI, Directed, GAttrs), RankEdges, []),
+  '*'(gv_edge_statement(NewI, Directed), RankEdges, []),
 
   % The non-rank edges.
-  '*'(gv_edge_statement(NewI, Directed, GAttrs), NewETerms, []),
+  '*'(gv_edge_statement(NewI, Directed), NewETerms, []),
 
   % Note that we do not include a line_feed here.
 
@@ -281,11 +284,13 @@ gv_graph0(
   indent(I).
 
 
+
 %! gv_graph_type(+Directed:boolean)// .
 % The type of graph that is represented.
 
 gv_graph_type(false) --> "graph".
 gv_graph_type(true) --> "digraph".
+
 
 
 %! gv_id(?Atom:atom)// is det.
@@ -347,6 +352,7 @@ gv_id_rest([H|T]) -->
   gv_id_rest(T).
 
 
+
 %! gv_keyword(+Codes:list(code)) is semidet.
 % Succeeds if the given codes for a GraphViz reserved keyword.
 
@@ -367,11 +373,13 @@ gv_keyword --> "strict".
 gv_keyword --> "subgraph".
 
 
+
 %! gv_kind(+Kind:oneof([edge,graph,node]))// .
 
 gv_kind(edge) --> "edge".
 gv_kind(graph) --> "graph".
 gv_kind(node) --> "node".
+
 
 
 %! gv_node_id(+NodeId:atom)// .
@@ -389,17 +397,16 @@ gv_node_id(Id) -->
 %  gv_port.
 
 
-%! gv_node_statement(
-%!   +Indent:integer,
-%!   +GraphAttributes,
-%!   +VertexTerm:compound
-%! )// .
+
+%! gv_node_statement(+Indent:nonneg, +VertexTerm:compound)// .
 % A GraphViz statement describing a vertex (GraphViz calls vertices 'nodes').
 
-gv_node_statement(I, GraphAttrs, vertex(Id,_,VAttrs)) -->
+gv_node_statement(I, vertex(Id,VAttrs)) -->
   indent(I),
   gv_node_id(Id), " ",
-  gv_attribute_list(node, GraphAttrs, VAttrs), line_feed.
+  bracketed(square, '*'(gv_attr(node), VAttrs, [])),
+  line_feed.
+
 
 
 gv_port -->
@@ -431,6 +438,7 @@ gv_port_location -->
   ).
 
 
+
 gv_quoted_string([]) --> [].
 % Just to be sure, we do not allow the double quote
 % that closes the string to be escaped.
@@ -450,21 +458,22 @@ gv_quoted_string([H|T]) -->
   gv_quoted_string(T).
 
 
-gv_ranked_node_collection(
-  I,
-  GraphAttrs,
-  rank(Rank_V_Term,Content_V_Terms)
-) -->
+
+gv_ranked_node_collection(I, rank(Rank_V_Term,Content_V_Terms)) -->
   indent(I),
   bracketed(curly, (
     line_feed,
 
     % The rank attribute.
     {NewI is I + 1},
-    indent(NewI), gv_attribute(rank=same), ";", line_feed,
+    indent(NewI),
+    gv_attr(subgraph, rank=same),
+    ";",
+    line_feed,
 
+    % Vertice statements.
     '*'(
-      gv_node_statement(NewI, GraphAttrs),
+      gv_node_statement(NewI),
       [Rank_V_Term|Content_V_Terms],
       []
     ),
@@ -473,6 +482,7 @@ gv_ranked_node_collection(
     indent(I)
   )),
   line_feed.
+
 
 
 %! gv_strict(+Strict:boolean)// is det.
@@ -485,7 +495,9 @@ gv_strict(true) --> "strict ".
 
 
 
-% Helpers
+
+
+% HELPERS
 
 add_default_nvpair(Attrs1, N, Default, Attrs2):-
   add_default_nvpair(Attrs1, N, Default, _, Attrs2).
@@ -508,12 +520,15 @@ extract_shared(Argss, Shared):-
 remove_shared_attributes(Shared, Args1, Args2):-
   ord_subtract(Args1, Shared, Args2).
 
-shared_attributes(Terms1, Shared, Terms2):-
-  maplist(term_components(Func), Terms1, Args1, Args2, Args3a),
-  extract_shared(Args3a, Shared),
-  maplist(remove_shared_attributes(Shared), Args3a, Args3b),
-  maplist(term_components(Func), Terms2, Args1, Args2, Args3b).
+shared_attributes(Terms1, SharedAs, Terms2):-
+  maplist(term_to_attrs, Terms1, As1),
+  extract_shared(As1, SharedAs),
+  maplist(remove_shared_attributes(SharedAs), As1, As2),
+  maplist(term_change_attrs, Terms1, As2, Terms2).
 
-term_components(Func, Term, Arg1, Arg2, Arg3):-
-  Term =.. [Func,Arg1,Arg2,Arg3].
+term_change_attrs(edge(From,To,_), A, edge(From,To,A)).
+term_change_attrs(vertex(Id,_), A, vertex(Id,A)).
+
+term_to_attrs(edge(_,_,A), A).
+term_to_attrs(vertex(_,A), A).
 

@@ -54,8 +54,11 @@
 :- use_module(plDcg(dcg_atom)).
 :- use_module(plDcg(dcg_cardinal)).
 :- use_module(plDcg(dcg_content)).
+:- use_module(plDcg(dcg_quote)).
 
 :- use_module(plGraphViz(gv_html)).
+
+
 
 
 
@@ -95,12 +98,14 @@ gv_attr_type(style).
 gv_attr_type(viewPort).
 
 
+
 %! addDouble(+Float:float)// .
 % An *addDouble* is represented by a Prolog float.
 
 addDouble(Float) -->
   '?'(plus_sign, []),
   double(Float).
+
 
 
 %! addPoint(+Point:compound)// .
@@ -110,6 +115,7 @@ addDouble(Float) -->
 addPoint(Point) -->
   '?'(plus_sign, []),
   point(Point).
+
 
 
 %! arrowType(+ArrowType:atom)// .
@@ -149,10 +155,14 @@ backwards_compatible(invempty).
 backwards_compatible(open).
 
 
+
+%! bool(+Value:boolean)// .
+
 bool(false) --> "false".
 bool(false) --> "no".
 bool(true) --> "true".
 bool(true) --> "yes".
+
 
 
 %! clusterMode(+ClusterMode:atom)// .
@@ -164,6 +174,7 @@ clusterMode(V) -->
 clusterMode(global).
 clusterMode(local).
 clusterMode(none).
+
 
 
 %! dirType(+DirectionType:oneof([back,both,forward,none]))// .
@@ -178,43 +189,56 @@ dirType(forward).
 dirType(none).
 
 
+
+%! double(+Double:float)// .
+
 double(Double1) -->
   % float//1 will check for float type.
   {Double2 is Double1 * 1.0},
   float(Double2).
 
 
-doubleList([H|T]) -->
-  double(H),
-  '*'(doubleList1, T, []).
 
-doubleList1(Float) -->
-  ":",
-  double(Float).
+%! doubleList(+Doubles:list(float))// .
+
+doubleList(L) -->
+  '+'(double, L, [separator(colon)]).
+
 
 
 %! escString(+String:atom)// .
 % @tbd Support for context-dependent replacements.
 
 escString(String) -->
-  atom(String).
+  quoted(atom(String)).
+
 
 
 % @tbd layerList
 
 
+
 % @tbd layerRange
 
 
+
+%! lblString(+String:compound)// .
+
+lblString(html(V)) -->
+  gv_html_like_label(V).
 lblString(V) -->
   escString(V).
-lblString(V) -->
-  gv_html_like_label(V).
 
+
+
+%! int(+Integer:integer)// .
 
 int(V) -->
   integer(V).
 
+
+
+%! outputMode(+OutputMode:atom)// .
 
 outputMode(V) -->
   {outputMode(V)},
@@ -225,8 +249,12 @@ outputMode(edgesfirst).
 outputMode(nodesfirst).
 
 
+
 % @tbd packMode
 
+
+
+%! pagedir(+PageDirection:atom)// .
 
 pagedir(V) -->
   {pagedir(V)},
@@ -240,6 +268,7 @@ pagedir('RB').
 pagedir('RT').
 pagedir('TL').
 pagedir('TR').
+
 
 
 %! point(+Point:compound)// .
@@ -256,12 +285,19 @@ input_changeable(false) --> "".
 input_changeable(true) --> "!".
 
 
+
+%! pointList(+Points:list(compound))// .
+
 pointList(Points) -->
   '*'(point, Points, []).
 
 
+
 % @tbd portPos
 
+
+
+%! quadType(+QuadType:atom)// .
 
 quadType(V) -->
   {quadType(V)},
@@ -271,6 +307,9 @@ quadType(fast).
 quadType(none).
 quadType(normal).
 
+
+
+%! rankType(+RankType:atom)// .
 
 rankType(V) -->
   {rankType(V)},
@@ -283,6 +322,9 @@ rankType(sink).
 rankType(source).
 
 
+
+%! rankdir(+RankDirection:atom)// .
+
 rankdir(V) -->
   {rankdir(V)},
   atom(V).
@@ -293,12 +335,18 @@ rankdir('RL').
 rankdir('TB').
 
 
+
+%! rect(+Rectangle:compound)// .
+
 rect(rect(LowerLeftX,LowerLeftY,UpperRightX,UpperRightY)) -->
   float(LowerLeftX), ",",
   float(LowerLeftY), ",",
   float(UpperRightX), ",",
   float(UpperRightY).
 
+
+
+%! shape(+Shape:atom)// .
 
 shape(V) -->
   {polygon_based_shape(V)},
@@ -361,6 +409,9 @@ polygon_based_shape(tripleoctagon).
 polygon_based_shape(utr).
 
 
+
+%! smoothType(+SmoothType:atom)// .
+
 smoothType(V) -->
   {smoothType(V)},
   atom(V).
@@ -374,17 +425,21 @@ smoothType(spring).
 smoothType(triangle).
 
 
+
 % @tbd splineType
+
 
 
 % @tbd startType
 
 
-%! string(?Content:atom)// .
+
+%! string(?String:atom)// .
 % A GraphViz string.
 
 string(Content) -->
   atom(Content).
+
 
 
 %! style(?Context:oneof([cluster,edge,node]), ?Style:atom) is nondet.
@@ -413,6 +468,7 @@ style(node, rounded).
 style(node, solid).
 style(node, striped).
 style(node, wedged).
+
 
 
 % @tbd viewPort

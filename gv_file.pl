@@ -1,14 +1,14 @@
 :- module(
   gv_file,
   [
-    file_to_gv/2, % +File:atom
+    file_to_gv/2, % +InputFile:atom
                   % +Options:list(nvpair)
-    file_to_gv/3, % +FromFile:atom
-                  % ?ToFile:atom
+    file_to_gv/3, % +InputFile:atom
+                  % ?OutputFile:atom
                   % +Options:list(nvpair)
-    gif_to_gv_file/3, % +GraphInterchangeFormat:compound
-                      % ?ToFile:atom
-                      % +Options:list(nvpair)
+    graph_to_gv_file/3, % +Graph:compound
+                        % ?OutputFile:atom
+                        % +Options:list(nvpair)
     open_dot/1 % +File:file
   ]
 ).
@@ -35,44 +35,6 @@ and GraphViz output files or SVG DOM structures.
 
 :- use_module(plGraphViz(gv_dot)).
 
-:- dynamic(user:file_type_program/2).
-:- multifile(user:file_type_program/2).
-
-:- dynamic(user:module_uses/2).
-:- multifile(user:module_uses/2).
-
-:- dynamic(user:prolog_file_type/2).
-:- multifile(user:prolog_file_type/2).
-
-% Register DOT.
-:- db_add_novel(user:prolog_file_type(dot, dot)).
-:- db_add_novel(user:prolog_file_type(dot, graphviz)).
-:- db_add_novel(user:file_type_program(dot, dotty)).
-:- db_add_novel(user:file_type_program(dot, dotx)).
-:- db_add_novel(user:module_uses(gv_file, file_type(dot))).
-
-% Register JPG/JPEG.
-:- db_add_novel(user:prolog_file_type(jpeg, jpeg)).
-:- db_add_novel(user:prolog_file_type(jpeg, graphviz_output)).
-:- db_add_novel(user:prolog_file_type(jpg, jpeg)).
-:- db_add_novel(user:prolog_file_type(jpg, graphviz_output)).
-
-% Register PDF.
-:- db_add_novel(user:prolog_file_type(pdf, pdf)).
-:- db_add_novel(user:prolog_file_type(pdf, graphviz_output)).
-
-% Register PNG.
-:- db_add_novel(user:prolog_file_type(png, png)).
-:- db_add_novel(user:prolog_file_type(png, graphviz_output)).
-
-% Register SVG.
-:- db_add_novel(user:prolog_file_type(svg, graphviz_output)).
-:- db_add_novel(user:prolog_file_type(svg, svg)).
-
-% Register XDOT.
-:- db_add_novel(user:prolog_file_type(xdot, graphviz_output)).
-:- db_add_novel(user:prolog_file_type(xdot, xdot)).
-
 :- predicate_options(codes_to_gv_file/3, 3, [
      pass_to(file_to_gv/3, 3)
    ]).
@@ -80,13 +42,13 @@ and GraphViz output files or SVG DOM structures.
      pass_to(file_to_gv/3, 3)
    ]).
 :- predicate_options(file_to_gv/3, 3, [
-     method(+oneof([dot,sfdp])),
-     to_file_type(+oneof([dot,jpeg,pdf,svg,xdot]))
+     method(+atom),
+     output(+atom)
    ]).
 :- predicate_options(gif_to_svg_dom/3, 3, [
-     pass_to(gif_to_gv_file/3, 3)
+     pass_to(graph_to_gv_file/3, 3)
    ]).
-:- predicate_options(gif_to_gv_file/3, 3, [
+:- predicate_options(graph_to_gv_file/3, 3, [
      pass_to(codes_to_gv_file/3, 3)
    ]).
 
@@ -94,81 +56,93 @@ and GraphViz output files or SVG DOM structures.
 
 %! codes_to_gv_file(
 %!   +Codes:list(code),
-%!   ?ToFile:atom,
+%!   ?OutputFile:atom,
 %!   +Options:list(nvpair)
 %! ) is det.
 
-codes_to_gv_file(Codes, ToFile, Options):-
-  absolute_file_name(data(tmp), TmpFile, [access(write),file_type(dot)]),
+codes_to_gv_file(Codes, OutputFile, Options):-
+  absolute_file_name(data(tmp), TmpFile, [access(write),extensions([dot])]),
   setup_call_cleanup(
     open(TmpFile, write, Write, [encoding(utf8)]),
     put_codes(Write, Codes),
     close(Write)
   ),
-  file_to_gv(TmpFile, ToFile, Options).
+  file_to_gv(TmpFile, OutputFile, Options).
 
 
-%! file_to_gv(+FromFile:atom, +Options:list(nvpair)) is det.
 
-file_to_gv(FromFile, Options):-
-  file_to_gv(FromFile, _, Options).
+%! file_to_gv(+InputFile:atom, +Options:list(nvpair)) is det.
 
-%! file_to_gv(+FromFile:atom, ?ToFile:atom, +Options:list(nvpair)) is det.
+file_to_gv(InputFile, Options):-
+  file_to_gv(InputFile, _, Options).
+
+%! file_to_gv(
+%!   +InputFile:atom,
+%!   ?OutputFile:atom,
+%!   +Options:list(nvpair)
+%! ) is det.
 % Converts a GraphViz DOT file to an image file, using a specific
 % visualization method.
 
-file_to_gv(FromFile, ToFile, Options):-
-  option(to_file_type(dot), Options), !,
-  rename_file(FromFile, ToFile).
-file_to_gv(FromFile, ToFile, Options):-
-  % The method option.
+file_to_gv(InputFile, OutputFile, Options):-
+  option(output(dot), Options), !,
+  (   var(OutputFile)
+  ->  OutputFile = InputFile
+  ;   rename_file(InputFile, OutputFile)
+  ).
+file_to_gv(InputFile, OutputFile, Options):-
+  % Typecheck for `method` option.
   option(method(Method), Options, dot),
-  must_be(oneof([dot,sfdp]), Method),
+  findall(Method0, gv_method(Method0), Methods),
+  must_be(oneof(Methods), Method),
 
-  % The file type option.
-  option(to_file_type(ToFileType), Options, pdf),
-  prolog_file_type(ToExtension, ToFileType),
-  prolog_file_type(ToExtension, graphviz_output), !,
+  % Typecheck for `output` option.
+  option(output(OutputType), Options, pdf),
+  findall(OutputType0, gv_output_type(OutputType0), OutputTypes),
+  must_be(oneof(OutputTypes), OutputType),
 
   % The output file is either given or created.
-  (   var(ToFile)
-  ->  user:prolog_file_type(ToExtension, ToFileType),
-      file_alternative(FromFile, _, _, ToExtension, ToFile)
-  ;   is_absolute_file_name(ToFile),
+  (   var(OutputFile)
+  ->  file_alternative(InputFile, _, _, OutputType, OutputFile)
+  ;   is_absolute_file_name(OutputFile),
       % The given output file must match a certain file extension.
-      file_name_extension(_, ToExtension, ToFile)
+      file_name_extension(_, OutputType, OutputFile)
   ),
-  % Now that we have the output file we can prevent the
-  % file type / file extension translation predicates from bakctracking.
-  !,
 
   % Run the GraphViz conversion command in the shell.
-  format(atom(OutputType), '-T~w', [ToExtension]),
+  format(atom(OutputTypeFlag), '-T~a', [OutputType]),
+  format(atom(OutputFileFlag), '-o~a', [OutputFile]),
   process_create(
     path(Method),
     % @tbd Windows hack:
     %%%%'C:\\Program Files (x86)\\Graphviz2.38\\bin\\dot.exe',
-    [OutputType,FromFile,'-o',ToFile],
+    [OutputTypeFlag,file(InputFile),OutputFileFlag],
     [process(PID)]
   ),
   process_wait(PID, exit(ShellStatus)),
   exit_code_handler('GraphViz', ShellStatus).
 
 
-%! gif_to_gv_file(+Gif:compound, ?ToFile:atom, +Options:list(nvpair)) is det.
+
+%! graph_to_gv_file(
+%!   +Graph:compound,
+%!   ?OutputFile:atom,
+%!   +Options:list(nvpair)
+%! ) is det.
 % Returns a file containing a GraphViz visualization of the given graph.
 %
 % The following options are supported:
-%   * =|method(+Method:oneof([dot,sfdp])|=
+%   * `method(+Method:atom`
 %     The algorithm used by GraphViz for positioning the tree nodes.
 %     Either =dot= (default) or =sfdp=.
-%   * =|to_file_type(+FileType:oneof([dot,jpeg,pdf,svg,xdot])|=
+%   * `output(+FileType:atom)`
 %     The file type of the generated GraphViz file.
 %     Default: `pdf`.
 
-gif_to_gv_file(Gif, ToFile, Options):-
+graph_to_gv_file(Gif, OutputFile, Options):-
   once(phrase(gv_graph(Gif), Codes)),
-  codes_to_gv_file(Codes, ToFile, Options).
+  codes_to_gv_file(Codes, OutputFile, Options).
+
 
 
 %! open_dot(+File:atom) is det.
@@ -181,3 +155,69 @@ open_dot(File):-
   once(find_program_by_file_type(dot, Program)),
   run_program(Program, [File]).
 
+
+
+
+% HELPERS
+
+gv_method(circo).
+gv_method(dot).
+gv_method(fdp).
+gv_method(neato).
+gv_method(osage).
+gv_method(sfdp).
+gv_method(twopi).
+
+
+
+gv_output_type(bmp).
+gv_output_type(canon).
+gv_output_type(dot).
+gv_output_type(gv).
+gv_output_type(xdot).
+gv_output_type('xdot1.2').
+gv_output_type('xdot1.4').
+gv_output_type(cgimage).
+gv_output_type(cmap).
+gv_output_type(eps).
+gv_output_type(exr).
+gv_output_type(fig).
+gv_output_type(gd).
+gv_output_type(gd2).
+gv_output_type(gif).
+gv_output_type(gtk).
+gv_output_type(ico).
+gv_output_type(imap).
+gv_output_type(cmapx).
+gv_output_type(imap_np).
+gv_output_type(cmapx_np).
+gv_output_type(ismap).
+gv_output_type(jp2).
+gv_output_type(jpg).
+gv_output_type(jpeg).
+gv_output_type(jpe).
+gv_output_type(pct).
+gv_output_type(pict).
+gv_output_type(pdf).
+gv_output_type(pic).
+gv_output_type(plain).
+gv_output_type('plain-ext').
+gv_output_type(png).
+gv_output_type(pov).
+gv_output_type(ps).
+gv_output_type(ps2).
+gv_output_type(psd).
+gv_output_type(sgi).
+gv_output_type(svg).
+gv_output_type(svgz).
+gv_output_type(tga).
+gv_output_type(tif).
+gv_output_type(tiff).
+gv_output_type(tk).
+gv_output_type(vml).
+gv_output_type(vmlz).
+gv_output_type(vrml).
+gv_output_type(wbmp).
+gv_output_type(webp).
+gv_output_type(xlib).
+gv_output_type(x11).

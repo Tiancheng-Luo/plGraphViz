@@ -9,7 +9,7 @@
 
 Grammar taken from the GraphViz Web site:
 
-```
+~~~
 label :   text
         | table
 text :   textitem
@@ -34,7 +34,9 @@ cells :   cell
         | cells <VR/> cell
 cell:   <TD> label </TD>
       | <TD> <IMG/> </TD>
-```
+~~~
+
+---
 
 @author Wouter Beek
 @see http://www.graphviz.org/content/node-shapes#html
@@ -49,49 +51,56 @@ cell:   <TD> label </TD>
 
 
 
+
+
 %! gv_html_like_label(?Content:compound)// .
 
 gv_html_like_label(Content) -->
   bracketed(angular, label(Content)).
 
 
+
 %! cell(?Contents:compound)// .
-% Supported attributes for TD:
-% ```
-% ALIGN="CENTER|LEFT|RIGHT|TEXT"
-% BALIGN="CENTER|LEFT|RIGHT"
-% BGCOLOR="color"
-% BORDER="value"
-% CELLPADDING="value"
-% CELLSPACING="value"
-% COLOR="color"
-% COLSPAN="value"
-% FIXEDSIZE="FALSE|TRUE"
-% GRADIENTANGLE="value"
-% HEIGHT="value"
-% HREF="value"
-% ID="value"
-% PORT="portName"
-% ROWSPAN="value"
-% SIDES="value"
-% STYLE="value"
-% TARGET="value"
-% TITLE="value"
-% TOOLTIP="value"
-% VALIGN="MIDDLE|BOTTOM|TOP"
-% WIDTH="value"
-% ```
+% Supported attributes for `TD`:
+%   - `ALIGN="CENTER|LEFT|RIGHT|TEXT"`
+%   - `BALIGN="CENTER|LEFT|RIGHT"`
+%   - `BGCOLOR="color"`
+%   - `BORDER="value"`
+%   - `CELLPADDING="value"`
+%   - `CELLSPACING="value"`
+%   - `COLOR="color"`
+%   - `COLSPAN="value"`
+%   - `FIXEDSIZE="FALSE|TRUE"`
+%   - `GRADIENTANGLE="value"`
+%   - `HEIGHT="value"`
+%   - `HREF="value"`
+%   - `ID="value"`
+%   - `PORT="portName"`
+%   - `ROWSPAN="value"`
+%   - `SIDES="value"`
+%   - `STYLE="value"`
+%   - `TARGET="value"`
+%   - `TITLE="value"`
+%   - `TOOLTIP="value"`
+%   - `VALIGN="MIDDLE|BOTTOM|TOP"`
+%   - `WIDTH="value"`
 %
-% Supported attributes for IMG:
-% ```
-% SCALE="FALSE|TRUE|WIDTH|HEIGHT|BOTH"
-% SRC="value"
-% ```
+% Supported attributes for `IMG`:
+%   - `SCALE="FALSE|TRUE|WIDTH|HEIGHT|BOTH"`
+%   - `SRC="value"`
 
 cell(td(Contents)) -->
-  html_element(td, [], label(Contents)).
-cell(td(img)) -->
-  html_element(td, [], html_element(img)).
+  cell(td([],Contents)).
+cell(td(Attrs1,Image)) -->
+  {(  Image =.. [img,Attrs2]
+  ->  true
+  ;   Image == img
+  ->  Attrs2 = []
+  )},
+  html_element(td, Attrs1, html_element(img,Attrs2)).
+cell(td(Attrs,Contents)) -->
+  html_element(td, Attrs, label(Contents)).
+
 
 
 %! cells(?Contents:list(compound))// .
@@ -107,19 +116,22 @@ cells([H]) -->
   cell(H).
 
 
+
 %! label(?Content:compound)// .
 % GraphViz HTML-like label.
 
 label(Content) -->
-  text(Content).
-label(Content) -->
   table(Content).
+label(Content) -->
+  text(Content).
+
 
 
 %! row(?Contents:compound)// .
 
 row(tr(Contents)) -->
-  html_element(tr, [], cell(Contents)).
+  html_element(tr, [], cells(Contents)).
+
 
 
 %! rows(?Contents:list)// .
@@ -127,72 +139,108 @@ row(tr(Contents)) -->
 rows([H|T]) -->
   row(H),
   rows(T).
-rows([H,hr|T]) -->
-  row(H),
+rows([hr|T]) -->
   html_element(hr),
   rows(T).
 rows([H]) -->
   row(H).
 
 
-%! table(?Contents:compound)// .
-% Supported attributes for TABLE:
-% ```
-% ALIGN="CENTER|LEFT|RIGHT"
-% BGCOLOR="color"
-% BORDER="value"
-% CELLBORDER="value"
-% CELLPADDING="value"
-% CELLSPACING="value"
-% COLOR="color"
-% COLUMNS="value"
-% FIXEDSIZE="FALSE|TRUE"
-% GRADIENTANGLE="value"
-% HEIGHT="value"
-% HREF="value"
-% ID="value"
-% PORT="portName"
-% ROWS="value"
-% SIDES="value"
-% STYLE="value"
-% TARGET="value"
-% TITLE="value"
-% TOOLTIP="value"
-% VALIGN="MIDDLE|BOTTOM|TOP"
-% WIDTH="value"
-% ```
-%
-% Supported attributes for FONT:
-% ```
-% COLOR="color"
-% FACE="fontname"
-% POINT-SIZE="value"
-% ```
 
+%! table(?Contents:compound)// .
+% ~~~
+% table : [ <FONT> ] <TABLE> rows </TABLE> [ </FONT> ]
+% ~~~
+%
+% Supported attributes for `TABLE`:
+%   - `ALIGN="CENTER|LEFT|RIGHT"`
+%   - `BGCOLOR="color"`
+%   - `BORDER="value"`
+%   - `CELLBORDER="value"`
+%   - `CELLPADDING="value"`
+%   - `CELLSPACING="value"`
+%   - `COLOR="color"`
+%   - `COLUMNS="value"`
+%   - `FIXEDSIZE="FALSE|TRUE"`
+%   - `GRADIENTANGLE="value"`
+%   - `HEIGHT="value"`
+%   - `HREF="value"`
+%   - `ID="value"`
+%   - `PORT="portName"`
+%   - `ROWS="value"`
+%   - `SIDES="value"`
+%   - `STYLE="value"`
+%   - `TARGET="value"`
+%   - `TITLE="value"`
+%   - `TOOLTIP="value"`
+%   - `VALIGN="MIDDLE|BOTTOM|TOP"`
+%   - `WIDTH="value"`
+%
+% Supported attributes for `FONT`:
+%  - `COLOR="color"`
+%    Sets the color of the font within the scope of `<FONT>...</FONT>`,
+%     or the border color of the table or cell within the scope of
+%     `<TABLE>...</TABLE>`, or `<TD>...</TD>`.
+%    This color can be overridden by a `COLOR` attribute in descendents.
+%    By default, the font color is determined by the `fontcolor` attribute
+%     of the corresponding node, edge or graph, and the border color is
+%     determined by the color attribute of the corresponding node, edge or
+%     graph.
+%   - `FACE="fontname"`
+%   - `POINT-SIZE="value"`
+
+table(table(Contents)) -->
+  table(table([],Contents)).
 table(table(Attrs,Contents)) -->
   html_element(table, Attrs, rows(Contents)).
-table(table(font(Contents))) -->
-  html_element(font, [], html_element(table, [], rows(Contents))).
+table(font(Table)) -->
+  table(font([],Table)).
+table(font(Attrs1,Table)) -->
+  {(  Table =.. [table,Attrs2,Contents]
+  ->  true
+  ;   Table =.. [table,Contents]
+  ->  Attrs2 = []
+  )},
+  html_element(font, Attrs1, table(table(Attrs2,Contents))).
+
 
 
 %! text(?Contents:list)// .
+% ~~~
+% text :   textitem
+%        | text textitem
+% ~~~
 
 text(Contents) -->
+  {is_list(Contents)}, !,
   '+'(textitem, Contents, []).
+text(Content) -->
+  text([Content]).
 
 
-%! textitem(?Content)// .
+
+%! textitem(?Content:compound)// .
+% ~~~
+% textitem :   string
+%            | <BR/>
+%            | <FONT> text </FONT>
+%            | <I> text </I>
+%            | <B> text </B>
+%            | <U> text </U>
+%            | <O> text </O>
+%            | <SUB> text </SUB>
+%            | <SUP> text </SUP>
+%            | <S> text </S>
+% ~~~
+%
 % Supported attributes for BR:
-% ```
-% ALIGN="CENTER|LEFT|RIGHT"
-% ```
+%   - `ALIGN="CENTER|LEFT|RIGHT"`
 
-textitem(string(String)) -->
-  html_string(String).
-textitem(entity(Name)) -->
-  html_entity(Name).
+textitem(br) -->
+  textitem(br([])).
 textitem(br(Attrs)) -->
   html_element(br, Attrs).
+% Compound term: parser.
 textitem(Compound) -->
   {var(Compound)}, !,
   html_element(Name, _, text(Content)),
@@ -200,12 +248,17 @@ textitem(Compound) -->
     supported_html_element(Name),
     Compound =.. [Name,Content]
   }.
+% Compound term: generator.
 textitem(Compound) -->
   {
     Compound =.. [Name,Content],
     supported_html_element(Name)
   },
   html_element(Name, _, text(Content)).
+textitem(String) -->
+  html_string(String).
+
+
 
 
 

@@ -1,9 +1,8 @@
 :- module(
   gv_attrs,
   [
-    gv_attr/3 % +Context:oneof([cluster,edge,graph,node,subgraph])
-              % +Attribute1:nvpair
-              % -Attribute2:nvpair
+    gv_attr_value//2 % +Context:oneof([cluster,edge,graph,node,subgraph])
+               % +Attribute:nvpair
   ]
 ).
 
@@ -25,6 +24,7 @@ Support for GraphViz attributes.
 
 :- use_module(plDcg(dcg_atom)).
 :- use_module(plDcg(dcg_content)).
+:- use_module(plDcg(dcg_meta)).
 :- use_module(plDcg(dcg_generics)).
 
 :- use_module(plHtml(html)).
@@ -58,32 +58,45 @@ Support for GraphViz attributes.
 
 
 
-%! gv_attr(
+
+
+%! gv_attr_value(
 %!   +Context:oneof([cluster,edge,graph,node,subgraph]),
-%!   +Attribute1:nvpair,
-%!   +Attribute2:nvpair
-%! ) is det.
+%!   +Attribute:nvpair
+%! )// is det.
 % Uses the default value in case Value is uninstantiated.
 % Otherwise, performs a typecheck and converts the given value.
 
-gv_attr(Context, N=V, N=V):-
-  var(V), !,
-  gv_attr(N, UsedBy, _, V, _, _),
-  % Check validity of context.
-  memberchk(Context, UsedBy).
-gv_attr(Context, N=V1, N=V2):-
-  gv_attr(N, UsedBy, Types, _, Minimum, _),
-  % Check validity of context.
-  memberchk(Context, UsedBy),
-  % Check validity of value type.
-  member(Type, Types),
-  (   Type == style
-  ->  Dcg =.. [Type,Context,V1]
-  ;   Dcg =.. [Type,V1]
-  ),
-  once(dcg_phrase(Dcg, V2)),
-  % Check validity of Value w.r.t. minimum value -- if available.
-  check_minimum(V1, Minimum).
+% Use the default if no value is given.
+gv_attr_value(Context, Name=Value) -->
+  {
+    var(Value), !,
+    gv_attr(Name, UsedBy, _, DefaultValue, _, _),
+    % Check validity of context.
+    memberchk(Context, UsedBy)
+  },
+  gv_attr_value(Context, Name=DefaultValue).
+gv_attr_value(Context, Name=Value) -->
+  {
+    % Check the validity of the context argument.
+    gv_attr(Name, UsedBy, Types, _, Minimum, _),
+    memberchk(Context, UsedBy),
+    
+    %  Pick a value type non-deterministically.
+    member(Type, Types),
+    
+    % The `style` type is the only one that requires the context argument.
+    (   Type == style
+    ->  Dcg =.. [Type,Context]
+    ;   Dcg =.. [Type]
+    ),
+    
+    % Check validity of Value w.r.t. minimum value -- if available.
+    check_minimum(Value, Minimum)
+  },
+  dcg_call(Dcg, Value).
+
+
 
 
 
