@@ -438,7 +438,7 @@ smoothType(triangle).
 % A GraphViz string.
 
 string(Content) -->
-  atom(Content).
+  quoted(atom(Content)).
 
 
 

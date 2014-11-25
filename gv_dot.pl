@@ -1,7 +1,7 @@
 :- module(
   gv_dot,
   [
-    gv_graph//1 % +Gif:compound
+    gv_graph//1 % +Graph:compound
   ]
 ).
 
@@ -150,7 +150,7 @@ gv_generic_attributes_statement(Kind, I, KindAttrs) -->
 
 
 
-%! gv_graph(+Gif:compound)//
+%! gv_graph(+Graph:compound)//
 % The follow graph attributes are supported,
 % beyond the GraphViz attributes for graphs:
 %   * `directed(+boolean)`
