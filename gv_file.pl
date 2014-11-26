@@ -45,7 +45,7 @@ and GraphViz output files or SVG DOM structures.
      method(+atom),
      output(+atom)
    ]).
-:- predicate_options(gif_to_svg_dom/3, 3, [
+:- predicate_options(graph_to_svg_dom/3, 3, [
      pass_to(graph_to_gv_file/3, 3)
    ]).
 :- predicate_options(graph_to_gv_file/3, 3, [
