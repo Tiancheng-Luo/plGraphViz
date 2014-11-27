@@ -29,7 +29,6 @@ and GraphViz output files or SVG DOM structures.
 :- use_module(library(process)).
 
 :- use_module(generics(code_ext)).
-:- use_module(generics(db_ext)).
 :- use_module(os(file_ext)).
 :- use_module(os(run_ext)).
 
@@ -44,9 +43,6 @@ and GraphViz output files or SVG DOM structures.
 :- predicate_options(file_to_gv/3, 3, [
      method(+atom),
      output(+atom)
-   ]).
-:- predicate_options(graph_to_svg_dom/3, 3, [
-     pass_to(graph_to_gv_file/3, 3)
    ]).
 :- predicate_options(graph_to_gv_file/3, 3, [
      pass_to(codes_to_gv_file/3, 3)
