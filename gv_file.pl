@@ -6,9 +6,9 @@
     file_to_gv/3, % +InputFile:atom
                   % ?OutputFile:atom
                   % +Options:list(nvpair)
-    graph_to_gv_file/3, % +Graph:compound
-                        % ?OutputFile:atom
-                        % +Options:list(nvpair)
+    export_graph_to_gv_file/3, % +ExportGraph:compound
+                               % ?OutputFile:atom
+                               % +Options:list(nvpair)
     open_dot/1 % +File:file
   ]
 ).
@@ -22,7 +22,7 @@ Also converts between GraphViz DOT formatted files
 and GraphViz output files or SVG DOM structures.
 
 @author Wouter Beek
-@version 2013/09, 2013/11-2014/01, 2014/05, 2014/07-2014/08
+@version 2013/09, 2013/11-2014/01, 2014/05, 2014/07-2014/08, 2014/11
 */
 
 :- use_module(library(option)).
@@ -34,6 +34,11 @@ and GraphViz output files or SVG DOM structures.
 
 :- use_module(plGraphViz(gv_dot)).
 
+:- dynamic(user:prolog_file_type/2).
+:- multifile(user:prolog_file_type/2).
+
+user:prolog_file_type(dot, dot).
+
 :- predicate_options(codes_to_gv_file/3, 3, [
      pass_to(file_to_gv/3, 3)
    ]).
@@ -44,9 +49,11 @@ and GraphViz output files or SVG DOM structures.
      method(+atom),
      output(+atom)
    ]).
-:- predicate_options(graph_to_gv_file/3, 3, [
+:- predicate_options(export_graph_to_gv_file/3, 3, [
      pass_to(codes_to_gv_file/3, 3)
    ]).
+
+
 
 
 
@@ -120,23 +127,23 @@ file_to_gv(InputFile, OutputFile, Options):-
 
 
 
-%! graph_to_gv_file(
-%!   +Graph:compound,
+%! export_graph_to_gv_file(
+%!   +ExportGraph:compound,
 %!   ?OutputFile:atom,
 %!   +Options:list(nvpair)
 %! ) is det.
 % Returns a file containing a GraphViz visualization of the given graph.
 %
 % The following options are supported:
-%   * `method(+Method:atom`
+%   - `method(+Method:atom`
 %     The algorithm used by GraphViz for positioning the tree nodes.
 %     Either =dot= (default) or =sfdp=.
-%   * `output(+FileType:atom)`
+%   - `output(+FileType:atom)`
 %     The file type of the generated GraphViz file.
 %     Default: `pdf`.
 
-graph_to_gv_file(Gif, OutputFile, Options):-
-  once(phrase(gv_graph(Gif), Codes)),
+export_graph_to_gv_file(ExportGraph, OutputFile, Options):-
+  once(phrase(gv_graph(ExportGraph), Codes)),
   codes_to_gv_file(Codes, OutputFile, Options).
 
 
@@ -150,6 +157,7 @@ graph_to_gv_file(Gif, OutputFile, Options):-
 open_dot(File):-
   once(find_program_by_file_type(dot, Program)),
   run_program(Program, [File]).
+
 
 
 
