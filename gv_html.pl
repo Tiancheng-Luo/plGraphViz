@@ -9,7 +9,7 @@
 
 Grammar taken from the GraphViz Web site:
 
-~~~
+```
 label :   text
         | table
 text :   textitem
@@ -34,7 +34,7 @@ cells :   cell
         | cells <VR/> cell
 cell:   <TD> label </TD>
       | <TD> <IMG/> </TD>
-~~~
+```
 
 ---
 
@@ -148,9 +148,9 @@ rows([H]) -->
 
 
 %! table(?Contents:compound)// .
-% ~~~
+% ```
 % table : [ <FONT> ] <TABLE> rows </TABLE> [ </FONT> ]
-% ~~~
+% ```
 %
 % Supported attributes for `TABLE`:
 %   - `ALIGN="CENTER|LEFT|RIGHT"`
@@ -206,10 +206,10 @@ table(font(Attrs1,Table)) -->
 
 
 %! text(?Contents:list)// .
-% ~~~
+% ```
 % text :   textitem
 %        | text textitem
-% ~~~
+% ```
 
 text(Contents) -->
   {is_list(Contents)}, !,
@@ -220,7 +220,7 @@ text(Content) -->
 
 
 %! textitem(?Content:compound)// .
-% ~~~
+% ```
 % textitem :   string
 %            | <BR/>
 %            | <FONT> text </FONT>
@@ -231,7 +231,7 @@ text(Content) -->
 %            | <SUB> text </SUB>
 %            | <SUP> text </SUP>
 %            | <S> text </S>
-% ~~~
+% ```
 %
 % Supported attributes for BR:
 %   - `ALIGN="CENTER|LEFT|RIGHT"`

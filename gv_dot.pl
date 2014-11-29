@@ -13,10 +13,10 @@ Methods for writing to the GraphViz DOT format.
 
 In GraphViz vertices are called 'nodes'.
 
-~~~abnf
+```abnf
 attr_list = "[" [a_list] "]" [attr_list]
 a_list = ID "=" ID [","] [a_list]
-~~~
+```
 
 ---
 
