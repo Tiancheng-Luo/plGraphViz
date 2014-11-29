@@ -94,7 +94,7 @@ wc_weight(Float) -->
 
 gv_color_download:-
   gv_color_url(Url),
-  download_html(Url, Dom, [html_dialect(html4),verbose(silent)]),
+  download_html_dom(Url, Dom, [html_dialect(html4),verbose(silent)]),
   xpath(Dom, //table(1), TableDom1),
   xpath(Dom, //table(2), TableDom2),
   maplist(assert_color_table, [x11,svg], [TableDom1,TableDom2]).

@@ -129,7 +129,7 @@ assert_gv_attr_row([Name,UsedBy1,Types1,Default1,Minimum,Notes]):-
 
 gv_attrs_download:-
   gv_attrs_url(Url),
-  download_html(Url, Dom, [html_dialect(html4),verbose(silent)]),
+  download_html_dom(Url, Dom, [html_dialect(html4),verbose(silent)]),
 
   xpath(Dom, //table(@align=center), TableDom),
   % @tbd This does not work, since in `record_name(Element, Name)`,
