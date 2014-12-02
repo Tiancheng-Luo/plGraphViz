@@ -2,7 +2,7 @@
   gv_attrs,
   [
     gv_attr_value//2 % +Context:oneof([cluster,edge,graph,node,subgraph])
-               % +Attribute:nvpair
+                     % +Attribute:nvpair
   ]
 ).
 
@@ -11,7 +11,7 @@
 Support for GraphViz attributes.
 
 @author Wouter Beek
-@version 2014/06, 2014/11
+@version 2014/06, 2014/11-2014/12
 */
 
 :- use_module(library(apply)).
@@ -30,7 +30,7 @@ Support for GraphViz attributes.
 :- use_module(plHtml(html)).
 :- use_module(plHtml(html_table)).
 
-:- use_module(plGraphViz(gv_attr_type)). % DCGs implementing attribute types.
+:- use_module(plGraphViz(gv_attr_type), [gv_attr_type/1]).
 
 :- db_add_novel(user:prolog_file_type(log, logging)).
 
@@ -94,7 +94,7 @@ gv_attr_value(Context, Name=Value) -->
     % Check validity of Value w.r.t. minimum value -- if available.
     check_minimum(Value, Minimum)
   },
-  dcg_call(Dcg, Value).
+  dcg_call(gv_attr_type:Dcg, Value).
 
 
 
