@@ -341,12 +341,12 @@ gv_id(Atom) -->
 gv_id(Atom) -->
   quoted(dcg_atom_codes(gv_quoted_string, Atom)), !.
 
-gv_id_first(X) --> letter(X).
+gv_id_first(X) --> ascii_letter(X).
 gv_id_first(X) --> underscore(X).
 
 gv_id_rest([]) --> [].
 gv_id_rest([H|T]) -->
-  (   alpha_numeric(H)
+  (   ascii_alpha_numeric(H)
   ;   underscore(H)
   ),
   gv_id_rest(T).
