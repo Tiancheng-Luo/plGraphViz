@@ -51,7 +51,7 @@ $ git submodule update --init
 ~~~prolog
 $ swipl run.pl
 ?- use_module(plGraphViz(gv_file)).
-?- graph_to_gv_file(
+?- export_graph_to_gv_file(
      graph([vertex(1,[]),vertex(2,[])],[edge(1,2,[])],[]),
      File,
      [method(sfdp),output(png)]
@@ -136,7 +136,7 @@ The following values are supported.
 Example of using HTML-like labels:
 
 ~~~prolog
-graph_to_gv_file(
+export_graph_to_gv_file(
   graph(
     [vertex(1,[]),vertex(2,[label=html(table([tr([td(a),td(b)]),tr([td(c),td(d)])]))])],
     [edge(1,2,[label='From 1 to 2.'])],
