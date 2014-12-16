@@ -94,6 +94,7 @@ file_to_gv(InputFile, OutputFile, Options):-
   ;   rename_file(InputFile, OutputFile)
   ).
 file_to_gv(InputFile, OutputFile, Options):-
+gtrace,
   % Typecheck for `method` option.
   option(method(Method), Options, dot),
   findall(Method0, gv_method(Method0), Methods),
