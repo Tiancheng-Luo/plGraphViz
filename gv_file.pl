@@ -22,7 +22,7 @@ Also converts between GraphViz DOT formatted files
 and GraphViz output files or SVG DOM structures.
 
 @author Wouter Beek
-@version 2013/09, 2013/11-2014/01, 2014/05, 2014/07-2014/08, 2014/11
+@version 2013/09, 2013/11-2014/01, 2014/05, 2014/07-2014/08, 2014/11-2014/12
 */
 
 :- use_module(library(option)).
@@ -38,6 +38,7 @@ and GraphViz output files or SVG DOM structures.
 :- multifile(user:prolog_file_type/2).
 
 user:prolog_file_type(dot, dot).
+user:prolog_file_type(pdf, pdf).
 
 :- predicate_options(codes_to_gv_file/3, 3, [
      pass_to(file_to_gv/3, 3)
@@ -94,7 +95,6 @@ file_to_gv(InputFile, OutputFile, Options):-
   ;   rename_file(InputFile, OutputFile)
   ).
 file_to_gv(InputFile, OutputFile, Options):-
-gtrace,
   % Typecheck for `method` option.
   option(method(Method), Options, dot),
   findall(Method0, gv_method(Method0), Methods),
@@ -108,9 +108,7 @@ gtrace,
   % The output file is either given or created.
   (   var(OutputFile)
   ->  file_alternative(InputFile, _, _, OutputType, OutputFile)
-  ;   is_absolute_file_name(OutputFile),
-      % The given output file must match a certain file extension.
-      file_name_extension(_, OutputType, OutputFile)
+  ;   is_absolute_file_name(OutputFile)
   ),
 
   % Run the GraphViz conversion command in the shell.

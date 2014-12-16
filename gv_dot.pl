@@ -22,7 +22,7 @@ a_list = ID "=" ID [","] [a_list]
 
 @author Wouter Beek
 @see http://www.graphviz.org/content/dot-language
-@version 2013/07, 2013/09, 2014/03-2014/06, 2014/11
+@version 2013/07, 2013/09, 2014/03-2014/06, 2014/11-2014/12
 */
 
 :- use_module(library(apply)).
@@ -32,6 +32,7 @@ a_list = ID "=" ID [","] [a_list]
 :- use_module(plDcg(dcg_abnf)).
 :- use_module(plDcg(dcg_arrow)).
 :- use_module(plDcg(dcg_ascii)).
+:- use_module(plDcg(dcg_atom)).
 :- use_module(plDcg(dcg_bracket)).
 :- use_module(plDcg(dcg_content)).
 :- use_module(plDcg(dcg_generics)).
@@ -111,12 +112,11 @@ gv_edge_operator(true) --> arrow(right, 2).
 
 gv_edge_statement(I, Directed, edge(FromId,ToId,EAttrs)) -->
   indent(I),
+
   gv_node_id(FromId), " ",
-
   gv_edge_operator(Directed), " ",
-
   gv_node_id(ToId), " ",
-
+  
   % We want `colorscheme/1` from the edges and
   % `directionality/1` from the graph.
   bracketed(square, '*'(gv_attr(edge), EAttrs, [])),
@@ -293,7 +293,7 @@ gv_graph_type(true) --> "digraph".
 
 
 
-%! gv_id(?Atom:atom)// is det.
+%! gv_id(?Atom:compound)// is det.
 % Parse a GraphViz identifier.
 % There are 4 variants:
 %   1. Any string of alphabetic (`[a-zA-Z'200-'377]`) characters,
@@ -306,17 +306,26 @@ gv_graph_type(true) --> "digraph".
 %      is converted to `"`. All other characters are left unchanged.
 %      In particular, `\\` remains `\\`.
 %      Layout engines may apply additional escape sequences.
+%      Represented by a Prolog term of the form `double_quoted_string(ATOM)`.
 %   4. An HTML string (`<...>`).
+%      Represented by a Prolog term of the form `html_like_label(COMPOUND)`.
 %
 % @tbd Add support for HTML-like labels:
 %      http://www.graphviz.org/doc/info/shapes.html#html
 %      This requires an XML grammar!
 
-% HTML strings (variant 4).
-gv_id(Content) -->
-  {compound(Content)}, !,
+% HTML strings (assumed to be the same as HTML-like labels).
+gv_id(html_like_label(Content)) --> !,
   gv_html_like_label(Content).
-% Alpha-numeric strings (variant 1).
+% Double-quoted strings.
+% The quotes are already part of the given atom.
+gv_id(double_quoted_string(Atom)) --> !,
+  quoted(atom(Atom)).
+% Numerals.
+gv_id(N) -->
+  {number(N)}, !,
+  gv_numeral(N).
+% Alpha-numeric strings.
 gv_id(Atom) -->
   {atom_codes(Atom, [H|T])},
   gv_id_first(H),
@@ -324,22 +333,6 @@ gv_id(Atom) -->
   % Variant 1 identifiers should not be (case-variants of) a
   % GraphViz keyword.
   {\+ gv_keyword([H|T])}.
-% Numerals (variant 2)
-gv_id(N) -->
-  {number(N)}, !,
-  gv_numeral(N).
-% Double-quoted strings (variant 3).
-% The quotes are already part of the given atom.
-gv_id(Atom) -->
-  {
-    atom_codes(Atom, [H|T]),
-    append(S, [H], T)
-  },
-  dcg_between(double_quote(H), gv_quoted_string(S)), !.
-% Double-quoted strings (variant 3).
-% The quotes are not in the given atom. They are written anyway.
-gv_id(Atom) -->
-  quoted(dcg_atom_codes(gv_quoted_string, Atom)), !.
 
 gv_id_first(X) --> ascii_letter(X).
 gv_id_first(X) --> underscore(X).
@@ -382,7 +375,7 @@ gv_kind(node) --> "node".
 
 
 
-%! gv_node_id(+NodeId:atom)// .
+%! gv_node_id(+NodeId:compound)// .
 % GraphViz node identifiers can be of the following two types:
 %   1. A GraphViz identifier, see gv_id//1.
 %   2. A GraphViz identifier plus a GraphViz port indicator, see gv_port//0.
@@ -436,26 +429,6 @@ gv_port_location -->
       gv_id(_)
     )
   ).
-
-
-
-gv_quoted_string([]) --> [].
-% Just to be sure, we do not allow the double quote
-% that closes the string to be escaped.
-gv_quoted_string([X]) -->
-  {X \== 92}, !,
-  [X].
-% A double quote is only allowed if it is escaped by a backslash.
-gv_quoted_string([92,34|T]) --> !,
-  gv_quoted_string(T).
-% Add the backslash escape character.
-gv_quoted_string([34|T]) --> !,
-  "\\\"",
-  gv_quoted_string(T).
-% All other characters are allowed without escaping.
-gv_quoted_string([H|T]) -->
-  [H],
-  gv_quoted_string(T).
 
 
 

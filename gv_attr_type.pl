@@ -46,7 +46,7 @@
 /** <module> GraphViz attribute types
 
 @author Wouter Beek
-@version 2014/06, 2014/11
+@version 2014/06, 2014/11-2014/12
 */
 
 :- use_module(plDcg(dcg_abnf)).
@@ -54,7 +54,9 @@
 :- use_module(plDcg(dcg_atom)).
 :- use_module(plDcg(dcg_cardinal)).
 :- use_module(plDcg(dcg_content)).
+:- use_module(plDcg(dcg_generics)).
 :- use_module(plDcg(dcg_quote)).
+:- use_module(plDcg(dcg_replace)).
 
 :- use_module(plGraphViz(gv_html)).
 
@@ -210,7 +212,10 @@ doubleList(L) -->
 % @tbd Support for context-dependent replacements.
 
 escString(String) -->
-  quoted(atom(String)).
+  {dcg_phrase(dcg_replace(double_quote, escaped_double_quote), String, String0)},
+  quoted(atom(String0)).
+escaped_double_quote -->
+  "\\\"".
 
 
 
