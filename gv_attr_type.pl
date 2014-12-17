@@ -229,7 +229,7 @@ escaped_double_quote -->
 
 %! lblString(+String:compound)// .
 
-lblString(html(V)) -->
+lblString(html_like_label(V)) -->
   gv_html_like_label(V).
 lblString(V) -->
   escString(V).

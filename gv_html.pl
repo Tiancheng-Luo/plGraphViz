@@ -236,8 +236,6 @@ text(Content) -->
 % Supported attributes for BR:
 %   - `ALIGN="CENTER|LEFT|RIGHT"`
 
-textitem(br) -->
-  textitem(br([])).
 textitem(br(Attrs)) -->
   html_element(br, Attrs).
 % Compound term: parser.
