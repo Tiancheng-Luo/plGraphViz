@@ -8,12 +8,15 @@
 /** <module> GraphViz numeral
 
 @author Wouter Beek
-@version 2014/05-2014/06
+@version 2014/05-2014/06, 2015/01
 */
 
 :- use_module(math(math_ext)).
+:- use_module(math(radix)).
+:- use_module(math(rational_ext)).
 
 :- use_module(plDcg(dcg_abnf)).
+:- use_module(plDcg(dcg_abnf_common)).
 :- use_module(plDcg(dcg_ascii)).
 :- use_module(plDcg(dcg_cardinal)).
 
