@@ -46,7 +46,7 @@
 /** <module> GraphViz attribute types
 
 @author Wouter Beek
-@version 2014/06, 2014/11-2014/12
+@version 2014/06, 2014/11-2015/01
 */
 
 :- use_module(plDcg(dcg_abnf)).
@@ -57,6 +57,7 @@
 :- use_module(plDcg(dcg_generics)).
 :- use_module(plDcg(dcg_quote)).
 :- use_module(plDcg(dcg_replace)).
+:- use_module(plDcg(language/c)).
 
 :- use_module(plGraphViz(gv_html)).
 
@@ -104,9 +105,9 @@ gv_attr_type(viewPort).
 %! addDouble(+Float:float)// .
 % An *addDouble* is represented by a Prolog float.
 
-addDouble(Float) -->
-  '?'(plus_sign, []),
-  double(Float).
+addDouble(N) -->
+  ("+" ; ""),
+  c_double(N).
 
 
 
@@ -115,7 +116,7 @@ addDouble(Float) -->
 % `point(X:float,Y:float,InputOnly:boolean)`.
 
 addPoint(Point) -->
-  '?'(plus_sign, []),
+  ("+" ; ""),
   point(Point).
 
 
@@ -194,10 +195,8 @@ dirType(none).
 
 %! double(+Double:float)// .
 
-double(Double1) -->
-  % float//1 will check for float type.
-  {Double2 is Double1 * 1.0},
-  float(Double2).
+double(N) -->
+  c_double(N).
 
 
 

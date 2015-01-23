@@ -19,7 +19,7 @@
 
 
 
-%! gv_numeral(?Value:number)// .
+%! gv_numeral(?Value:compound)// .
 %
 % # Syntax
 %
@@ -45,36 +45,39 @@
 %   - (decimal-separator)
 
 gv_numeral(N) -->
-  {var(N)}, !,
-  sign(Sign),
-  (   ".",
-      '+'(decimal_digit, Fractional, [convert1(weights_decimal)]),
-      {IntegerPart = 0}
-  ;   '+'(decimal_digit, IntegerPart, [convert1(weights_decimal)]),
-      (   ".",
-          '*'(decimal_digit, Fractional, [convert1(weights_decimal)])
-      ;   {Fractional = 0}
+  (   {ground(N)}
+  ->  '[-]?'(N),
+      {N0 is abs(N)},
+      {rational_parts(N0, I, F)},
+      (   % [1] The fractional is zero, so only write the integer part
+          %     and do not write the decimal separator.
+          {F =:= 0}
+      ->  {weights_nonneg(IW, I)},
+          '[0-9]+'(IW)
+      ;   % [2] The integer part is zero, so only write the fractional part,
+          %     preceded by the decimal separator.
+          {I =:= 0}
+      ->  ".",
+          {weights_fraction(FW, F)},
+          '[0-9]*'(FW)
+      ;   % [3] Both the integer part and the fractional are non-zero,
+          %     so write both of them, with the decimal separator in-between.
+          {weights_nonneg(IW, I)},
+          '[0-9]+'(IW),
+          ".",
+          {weights_fraction(FW, F)},
+          '[0-9]*'(FW)
       )
-  ),
-  {   number_integer_parts(UnsignedN, IntegerPart, Fractional),
-      N is copysign(UnsignedN, Sign)
-  }.
-gv_numeral(N) -->
-  {number_sign_parts(N, Sign, UnsignedN)},
-  sign_negative(Sign),
-  {number_integer_parts(UnsignedN, IntegerPart, Fractional)},
-  (   % [1] The fractional is zero, so only write the integer part
-      %     and do not write the decimal separator.
-      {Fractional =:= 0}
-  ->  integer(IntegerPart)
-  ;   % [2] The integer part is zero, so only write the fractional part,
-      %     preceded by the decimal separator.
-      {IntegerPart =:= 0}
-  ->  ".",
-      integer(Fractional)
-  ;   % [3] Both the integer part and the fractional are non-zero,
-      %     so write both of them, with the decimal separator in-between.
-      integer(IntegerPart),
-      ".",
-      integer(Fractional)
+  ;   '[-]?'(Sg),
+      (   ".",
+          '[0-9]+'(FW),
+          {IW = []}
+      ;   '[0-9]+'(IW),
+          (   ".",
+              '[0-9]*'(FW),
+          ;   {FW = []}
+          )
+      ),
+      {rational_parts_weights(N0, IW, FW)},
+      {N is copysign(N0, Sg)}
   ).
