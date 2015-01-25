@@ -49,6 +49,8 @@
 @version 2014/06, 2014/11-2015/01
 */
 
+:- use_module(library(dcg/basics), [float//1,integer//1]).
+
 :- use_module(plDcg(dcg_abnf)).
 :- use_module(plDcg(dcg_ascii)).
 :- use_module(plDcg(dcg_atom)).
