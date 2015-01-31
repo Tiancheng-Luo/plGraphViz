@@ -59,7 +59,6 @@
 :- use_module(plDcg(dcg_generics)).
 :- use_module(plDcg(dcg_quote)).
 :- use_module(plDcg(dcg_replace)).
-:- use_module(plDcg(language/c)).
 
 :- use_module(plGraphViz(gv_html)).
 
@@ -109,7 +108,7 @@ gv_attr_type(viewPort).
 
 addDouble(N) -->
   ("+" ; ""),
-  c_double(N).
+  float(N).
 
 
 
@@ -198,7 +197,7 @@ dirType(none).
 %! double(+Double:float)// .
 
 double(N) -->
-  c_double(N).
+  float(N).
 
 
 
