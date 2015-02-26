@@ -18,17 +18,16 @@ Support for GraphViz attributes.
 :- use_module(library(persistency)).
 :- use_module(library(xpath)).
 
-:- use_module(generics(db_ext)).
-:- use_module(os(file_ext)).
-:- use_module(os(file_gnu)).
-
-:- use_module(plDcg(dcg_atom)).
-:- use_module(plDcg(dcg_content)).
-:- use_module(plDcg(dcg_meta)).
-:- use_module(plDcg(dcg_generics)).
+:- use_module(plc(dcg/dcg_atom)).
+:- use_module(plc(dcg/dcg_content)).
+:- use_module(plc(dcg/dcg_meta)).
+:- use_module(plc(dcg/dcg_generics)).
+:- use_module(plc(generics/db_ext)).
+:- use_module(plc(io/file_ext)).
+:- use_module(plc(io/file_gnu)).
 
 :- use_module(plHtml(html)).
-:- use_module(plHtml(html_table)).
+:- use_module(plHtml(elements/html_table)).
 
 :- use_module(plGraphViz(gv_attr_type), [gv_attr_type/1]).
 
@@ -100,7 +99,7 @@ gv_attr_value(Context, Name=Value) -->
 
 
 
-% HELPERS
+% HELPERS %
 
 %! check_minimum(+Value:atom, +Minimum:number) is semidet.
 % Trivially succeeds if no minimum value is available for a given attribute.
@@ -112,7 +111,9 @@ check_minimum(V, Min1):-
 
 
 
-% INITIALIZATION
+
+
+% INITIALIZATION %
 
 %! assert_gv_attr_row(+Row:list(atom)) is det.
 

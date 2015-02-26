@@ -29,15 +29,15 @@ a_list = ID "=" ID [","] [a_list]
 :- use_module(library(lists), except([delete/3,subset/2])).
 :- use_module(library(ordsets)).
 
-:- use_module(plDcg(dcg_abnf)).
-:- use_module(plDcg(dcg_arrow)).
-:- use_module(plDcg(dcg_ascii)).
-:- use_module(plDcg(dcg_atom)).
-:- use_module(plDcg(dcg_bracket)).
-:- use_module(plDcg(dcg_content)).
-:- use_module(plDcg(dcg_generics)).
-:- use_module(plDcg(dcg_meta)).
-:- use_module(plDcg(dcg_quote)).
+:- use_module(plc(dcg/dcg_abnf)).
+:- use_module(plc(dcg/dcg_arrow)).
+:- use_module(plc(dcg/dcg_ascii)).
+:- use_module(plc(dcg/dcg_atom)).
+:- use_module(plc(dcg/dcg_bracket)).
+:- use_module(plc(dcg/dcg_content)).
+:- use_module(plc(dcg/dcg_generics)).
+:- use_module(plc(dcg/dcg_meta)).
+:- use_module(plc(dcg/dcg_quote)).
 
 :- use_module(plGraphViz(gv_attrs)).
 :- use_module(plGraphViz(gv_html)).

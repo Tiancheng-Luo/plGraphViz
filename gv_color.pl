@@ -22,19 +22,18 @@
 :- use_module(library(persistency)).
 :- use_module(library(xpath)).
 
-:- use_module(generics(db_ext)).
-:- use_module(generics(persistent_db_ext)).
-:- use_module(os(file_ext)).
-:- use_module(os(file_gnu)).
-
-:- use_module(plDcg(abnf_core_rules)).
-:- use_module(plDcg(dcg_abnf)).
-:- use_module(plDcg(dcg_atom)).
-:- use_module(plDcg(dcg_cardinal)).
-:- use_module(plDcg(dcg_content)).
+:- use_module(plc(dcg/abnf_core_rules)).
+:- use_module(plc(dcg/dcg_abnf)).
+:- use_module(plc(dcg/dcg_atom)).
+:- use_module(plc(dcg/dcg_cardinal)).
+:- use_module(plc(dcg/dcg_content)).
+:- use_module(plc(generics/db_ext)).
+:- use_module(plc(generics/persistent_db_ext)).
+:- use_module(plc(io/file_ext)).
+:- use_module(plc(io/file_gnu)).
 
 :- use_module(plHtml(html)).
-:- use_module(plHtml(html_table)).
+:- use_module(plHtml(elements/html_table)).
 
 :- db_add_novel(user:prolog_file_type(log, logging)).
 
@@ -43,6 +42,8 @@
 :- persistent(gv_color(colorscheme:oneof([svg,x11]),color:atom)).
 
 :- initialization(gv_color_init).
+
+
 
 
 
@@ -89,7 +90,9 @@ wc_weight(Float) -->
 
 
 
-% INITIALIZATION
+
+
+% INITIALIZATION %
 
 %! gv_color_download is det.
 
