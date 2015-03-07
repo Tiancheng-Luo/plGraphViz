@@ -81,16 +81,16 @@ gv_attr_value(Context, Name=Value) -->
     % Check the validity of the context argument.
     gv_attr(Name, UsedBy, Types, _, Minimum, _),
     memberchk(Context, UsedBy),
-    
+
     %  Pick a value type non-deterministically.
     member(Type, Types),
-    
+
     % The `style` type is the only one that requires the context argument.
     (   Type == style
     ->  Dcg =.. [Type,Context]
     ;   Dcg =.. [Type]
     ),
-    
+
     % Check validity of Value w.r.t. minimum value -- if available.
     check_minimum(Value, Minimum)
   },
@@ -129,13 +129,8 @@ assert_gv_attr_row([Name,UsedBy1,Types1,Default1,Minimum,Notes]):-
 
 gv_attrs_download:-
   gv_attrs_url(Url),
-  download_html_dom(Url, Dom, [html_dialect(html4),verbose(silent)]),
-
+  download_html_dom(Url, Dom, [dialect(html4),silent(true)]),
   xpath(Dom, //table(@align=center), TableDom),
-  % @tbd This does not work, since in `record_name(Element, Name)`,
-  %      `Element` is a signleton list whereas a compound term is expected.
-  %%%%xpath(Dom, /html/body/table, TableDom),
-
   html_to_table(TableDom, _, Rows),
   maplist(assert_gv_attr_row, Rows).
 
