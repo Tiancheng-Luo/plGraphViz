@@ -43,9 +43,9 @@ cell:   <TD> label </TD>
 @version 2013/07, 2013/09, 2014/03-2014/06, 2014/11
 */
 
-:- use_module(plDcg(dcg_abnf)).
-:- use_module(plDcg(dcg_bracket)).
-:- use_module(plDcg(dcg_content)).
+:- use_module(plc(dcg/dcg_abnf)).
+:- use_module(plc(dcg/dcg_bracket)).
+:- use_module(plc(dcg/dcg_content)).
 
 :- use_module(plHtml(html_dcg)).
 

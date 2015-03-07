@@ -4,9 +4,6 @@
 [submodule "plHtml"]
 	path = plHtml
 	url = https://github.com/wouterbeek/plHtml.git
-[submodule "plDcg"]
-	path = plDcg
-	url = https://github.com/wouterbeek/plDcg.git
 [submodule "plUri"]
 	path = plUri
 	url = https://github.com/wouterbeek/plUri.git

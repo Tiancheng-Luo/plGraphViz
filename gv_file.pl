@@ -28,9 +28,9 @@ and GraphViz output files or SVG DOM structures.
 :- use_module(library(option)).
 :- use_module(library(process)).
 
-:- use_module(generics(code_ext)).
-:- use_module(os(file_ext)).
-:- use_module(os(run_ext)).
+:- use_module(plc(generics/code_ext)).
+:- use_module(plc(io/file_ext)).
+:- use_module(plc(process/run_ext)).
 
 :- use_module(plGraphViz(gv_dot)).
 
@@ -41,18 +41,18 @@ user:prolog_file_type(dot, dot).
 user:prolog_file_type(pdf, pdf).
 
 :- predicate_options(codes_to_gv_file/3, 3, [
-     pass_to(file_to_gv/3, 3)
-   ]).
+  pass_to(file_to_gv/3, 3)
+]).
 :- predicate_options(file_to_gv/2, 2, [
-     pass_to(file_to_gv/3, 3)
-   ]).
+  pass_to(file_to_gv/3, 3)
+]).
 :- predicate_options(file_to_gv/3, 3, [
-     method(+atom),
-     output(+atom)
-   ]).
+  method(+atom),
+  output(+atom)
+]).
 :- predicate_options(export_graph_to_gv_file/3, 3, [
-     pass_to(codes_to_gv_file/3, 3)
-   ]).
+  pass_to(codes_to_gv_file/3, 3)
+]).
 
 
 
