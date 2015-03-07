@@ -1,26 +1,25 @@
 plGraphViz
 ==========
 
-Easily export graphs represented as Prolog terms to
- [GraphViz](http://www.graphviz.org/).
+This library allows you to easily export graphs represented as Prolog terms
+using [GraphViz](http://www.graphviz.org/), an advanced graph drawing library.
 The Prolog terms have the following form:
 
 ~~~prolog
 graph(Vertices, Edges, GraphAttrs)
 ~~~
 
-`Vertices` and `Edges` are lists of compounds terms of
- the following form:
+`Vertices` and `Edges` are lists of compound terms of the following form:
 
 ~~~prolog
 vertex(Id, VertexAttrs)
-edges(FromId, ToId, EdgeAttrs)
+edge(FromId, ToId, EdgeAttrs)
 ~~~
 
-`Id` identifies a vertex and need not occur in any of the edges
- (i.e., unconnected vertices are allowed).
+`Id` identifies a vertex and may or may not occur in any of the edges
+(i.e., unconnected vertices are allowed).
 `FromId` and `ToId` may occur in the list of vertices,
- in order to draw an edge between vertices with set attributes.
+in order to draw an edge between vertices with set attributes.
 
 Attributes have the form `Name=Value`.
 `GraphAttrs` are attributes of the graph.
@@ -28,13 +27,12 @@ Attributes have the form `Name=Value`.
 `EdgeAttrs` are attributes of the edge.
 
 Attribute values are given as Prolog terms as well,
- and are type-checked before exporting.
+and are type-checked before exporting.
 Many of the GraphViz attributes are supported.
 New ones are added on an as-needed bases
- (open an issue on Github if you want to see a specific feature added).
-Supports HTML-like labels, allowing complex tables to be shown
- inside vertices.
-Support for vertex clusters is currently under way.
+(open an issue on Github if you want to see a specific feature added!).
+HTML-like labels are supported, allowing complex tables to be shown
+inside vertices.
 
 ---
 
@@ -62,7 +60,7 @@ $ swipl run.pl
 ![](https://raw.githubusercontent.com/wouterbeek/plGraphViz/master/example1.png "Example graph.")
 
 The graphic can be saved to a different file by instantiating
- the `File` argument.
+the `File` argument.
 
 ---
 
@@ -152,4 +150,3 @@ export_graph_to_gv_file(
 ---
 
 Developed during 2013-2014 by [Wouter Beek](http://www.wouterbeek.com).
-
