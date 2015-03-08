@@ -13,7 +13,7 @@
 @author Wouter Beek
 @tbd Color value `transparent` is only available in the output formats
      ps, svg, fig, vmrl, and the bitmap formats.
-@version 2014/06, 2014/10-2014/11, 2015/01
+@version 2014/06, 2014/10-2014/11, 2015/01, 2015/03
 */
 
 :- use_module(library(apply)).
@@ -29,6 +29,7 @@
 :- use_module(plc(dcg/dcg_content)).
 :- use_module(plc(generics/db_ext)).
 :- use_module(plc(generics/persistent_db_ext)).
+:- use_module(plc(generics/print_ext)).
 :- use_module(plc(io/file_ext)).
 :- use_module(plc(io/file_gnu)).
 
@@ -97,11 +98,16 @@ wc_weight(Float) -->
 %! gv_color_download is det.
 
 gv_color_download:-
-  gv_color_url(Url),
-  download_html_dom(Url, Dom, [html_dialect(html4),verbose(silent)]),
-  xpath(Dom, //table(1), TableDom1),
-  xpath(Dom, //table(2), TableDom2),
-  maplist(assert_color_table, [x11,svg], [TableDom1,TableDom2]).
+  report_on_process(
+    'Updating the GraphViz color table...',
+    (
+      gv_color_uri(Uri),
+      download_html_dom(Uri, Dom, [html_dialect(html4),silent(true)]),
+      xpath(Dom, //table(1), TableDom1),
+      xpath(Dom, //table(2), TableDom2),
+      maplist(assert_color_table, [x11,svg], [TableDom1,TableDom2])
+    )
+  ).
 
 assert_color_table(Colorscheme, TableDom):-
   html_to_table(TableDom, _, Rows),
@@ -141,7 +147,7 @@ gv_color_update(_):-
   gv_color_download.
 
 
-%! gv_color_url(-Url:url) is det.
+%! gv_color_uri(-Url:url) is det.
 
-gv_color_url('http://www.graphviz.org/doc/info/colors.html').
+gv_color_uri('http://www.graphviz.org/doc/info/colors.html').
 

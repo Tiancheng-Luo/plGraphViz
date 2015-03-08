@@ -11,7 +11,7 @@
 Support for GraphViz attributes.
 
 @author Wouter Beek
-@version 2014/06, 2014/11-2014/12
+@version 2014/06, 2014/11-2014/12, 2015/03
 */
 
 :- use_module(library(apply)).
@@ -23,6 +23,7 @@ Support for GraphViz attributes.
 :- use_module(plc(dcg/dcg_meta)).
 :- use_module(plc(dcg/dcg_generics)).
 :- use_module(plc(generics/db_ext)).
+:- use_module(plc(generics/print_ext)).
 :- use_module(plc(io/file_ext)).
 :- use_module(plc(io/file_gnu)).
 
@@ -129,11 +130,16 @@ assert_gv_attr_row([Name,UsedBy1,Types1,Default1,Minimum,Notes]):-
 % Downloads the table describing GraphViz attributes from `graphviz.org`.
 
 gv_attrs_download:-
-  gv_attrs_url(Url),
-  download_html_dom(Url, Dom, [dialect(html4),silent(true)]),
-  xpath(Dom, //table(@align=center), TableDom),
-  html_to_table(TableDom, _, Rows),
-  maplist(assert_gv_attr_row, Rows).
+  report_on_process(
+    'Updating GraphViz attributes table... ',
+    (
+      gv_attrs_uri(Uri),
+      download_html_dom(Uri, Dom, [dialect(html5),silent(true)]),
+      xpath(Dom, //table(@align=lower_case(center)), TableDom),
+      html_to_table(TableDom, _, Rows),
+      maplist(assert_gv_attr_row, Rows)
+    )
+  ).
 
 
 %! gv_attrs_file(-File:atom) is det.
@@ -167,9 +173,9 @@ gv_attrs_update(_):-
   gv_attrs_download.
 
 
-%! gv_attrs_url(-Url:url) is det.
+%! gv_attrs_uri(-Url:url) is det.
 
-gv_attrs_url('http://www.graphviz.org/doc/info/attrs.html').
+gv_attrs_uri('http://www.graphviz.org/doc/info/attrs.html').
 
 
 %! safe_db_attach(+File:atom) is det.
