@@ -22,7 +22,8 @@ Also converts between GraphViz DOT formatted files
 and GraphViz output files or SVG DOM structures.
 
 @author Wouter Beek
-@version 2013/09, 2013/11-2014/01, 2014/05, 2014/07-2014/08, 2014/11-2014/12
+@version 2013/09, 2013/11-2014/01, 2014/05, 2014/07-2014/08, 2014/11-2014/12,
+         2015/03
 */
 
 :- use_module(library(option)).
@@ -30,7 +31,8 @@ and GraphViz output files or SVG DOM structures.
 
 :- use_module(plc(generics/code_ext)).
 :- use_module(plc(io/file_ext)).
-:- use_module(plc(process/run_ext)).
+:- use_module(plc(process/process_ext)).
+:- use_module(plc(process/program_db)).
 
 :- use_module(plGraphViz(gv_dot)).
 
@@ -114,15 +116,12 @@ file_to_gv(InputFile, OutputFile, Options):-
   % Run the GraphViz conversion command in the shell.
   format(atom(OutputTypeFlag), '-T~a', [OutputType]),
   format(atom(OutputFileFlag), '-o~a', [OutputFile]),
-  process_create(
-    path(Method),
-    % @tbd Windows hack:
-    %%%%'C:\\Program Files (x86)\\Graphviz2.38\\bin\\dot.exe',
+  atomic_list_concat(['GraphViz',Method], ' ', Program),
+  handle_process(
+    Method,
     [OutputTypeFlag,file(InputFile),OutputFileFlag],
-    [process(PID)]
-  ),
-  process_wait(PID, exit(ShellStatus)),
-  exit_code_handler('GraphViz', ShellStatus).
+    [detached(true),program(Program)]
+  ).
 
 
 
@@ -155,7 +154,7 @@ export_graph_to_gv_file(ExportGraph, OutputFile, Options):-
 
 open_dot(File):-
   once(find_program_by_file_type(dot, Program)),
-  run_program(Program, [File]).
+  handle_process(Program, [File], [program('GraphViz DOT')]).
 
 
 
