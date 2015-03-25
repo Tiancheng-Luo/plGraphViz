@@ -7,3 +7,5 @@
   :- ensure_loaded(load).
 :- endif.
 
+:- use_module(plGraphViz(gv_file)).
+

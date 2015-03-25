@@ -22,7 +22,8 @@ Also converts between GraphViz DOT formatted files
 and GraphViz output files or SVG DOM structures.
 
 @author Wouter Beek
-@version 2013/09, 2013/11-2014/01, 2014/05, 2014/07-2014/08, 2014/11-2014/12
+@version 2013/09, 2013/11-2014/01, 2014/05, 2014/07-2014/08, 2014/11-2014/12,
+         2015/03
 */
 
 :- use_module(library(option)).
@@ -30,7 +31,8 @@ and GraphViz output files or SVG DOM structures.
 
 :- use_module(plc(generics/code_ext)).
 :- use_module(plc(io/file_ext)).
-:- use_module(plc(process/run_ext)).
+:- use_module(plc(process/process_ext)).
+:- use_module(plc(process/program_db)).
 
 :- use_module(plGraphViz(gv_dot)).
 
@@ -40,9 +42,6 @@ and GraphViz output files or SVG DOM structures.
 user:prolog_file_type(dot, dot).
 user:prolog_file_type(pdf, pdf).
 
-:- predicate_options(codes_to_gv_file/3, 3, [
-  pass_to(file_to_gv/3, 3)
-]).
 :- predicate_options(file_to_gv/2, 2, [
   pass_to(file_to_gv/3, 3)
 ]).
@@ -51,27 +50,10 @@ user:prolog_file_type(pdf, pdf).
   output(+atom)
 ]).
 :- predicate_options(export_graph_to_gv_file/3, 3, [
-  pass_to(codes_to_gv_file/3, 3)
+  pass_to(file_to_gv/3, 3)
 ]).
 
 
-
-
-
-%! codes_to_gv_file(
-%!   +Codes:list(code),
-%!   ?OutputFile:atom,
-%!   +Options:list(nvpair)
-%! ) is det.
-
-codes_to_gv_file(Codes, OutputFile, Options):-
-  absolute_file_name(data(tmp), TmpFile, [access(write),extensions([dot])]),
-  setup_call_cleanup(
-    open(TmpFile, write, Write, [encoding(utf8)]),
-    put_codes(Write, Codes),
-    close(Write)
-  ),
-  file_to_gv(TmpFile, OutputFile, Options).
 
 
 
@@ -114,15 +96,12 @@ file_to_gv(InputFile, OutputFile, Options):-
   % Run the GraphViz conversion command in the shell.
   format(atom(OutputTypeFlag), '-T~a', [OutputType]),
   format(atom(OutputFileFlag), '-o~a', [OutputFile]),
-  process_create(
-    path(Method),
-    % @tbd Windows hack:
-    %%%%'C:\\Program Files (x86)\\Graphviz2.38\\bin\\dot.exe',
+  atomic_list_concat(['GraphViz',Method], ' ', Program),
+  handle_process(
+    Method,
     [OutputTypeFlag,file(InputFile),OutputFileFlag],
-    [process(PID)]
-  ),
-  process_wait(PID, exit(ShellStatus)),
-  exit_code_handler('GraphViz', ShellStatus).
+    [program(Program)]
+  ).
 
 
 
@@ -143,19 +122,30 @@ file_to_gv(InputFile, OutputFile, Options):-
 
 export_graph_to_gv_file(ExportGraph, OutputFile, Options):-
   once(phrase(gv_graph(ExportGraph), Codes)),
-  codes_to_gv_file(Codes, OutputFile, Options).
+  
+  % Be thread-safe.
+  thread_self(Id),
+  atomic_list_concat([gv_file,Id], '_', ThreadName),
+  absolute_file_name(
+    data(ThreadName),
+    TmpFile,
+    [access(write),extensions([dot])]
+  ),
+  setup_call_cleanup(
+    open(TmpFile, write, Write, [encoding(utf8)]),
+    put_codes(Write, Codes),
+    close(Write)
+  ),
+  file_to_gv(TmpFile, OutputFile, Options).
 
 
 
 %! open_dot(+File:atom) is det.
 % Opens the given DOT file.
-%
-% @tbd Test support on Windows.
-% @tbd Test support on OS-X.
 
 open_dot(File):-
   once(find_program_by_file_type(dot, Program)),
-  run_program(Program, [File]).
+  handle_process(Program, [file(File)], []).
 
 
 
