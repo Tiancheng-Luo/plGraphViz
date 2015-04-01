@@ -212,7 +212,13 @@ doubleList(L) -->
 % @tbd Support for context-dependent replacements.
 
 escString(String) -->
-  {dcg_phrase(dcg_replace(double_quote, escaped_double_quote), String, String0)},
+  {
+    atom_phrase(
+      dcg_replace(double_quote, escaped_double_quote),
+      String,
+      String0
+    )
+  },
   quoted(atom(String0)).
 escaped_double_quote -->
   "\\\"".

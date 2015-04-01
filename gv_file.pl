@@ -42,9 +42,6 @@ and GraphViz output files or SVG DOM structures.
 user:prolog_file_type(dot, dot).
 user:prolog_file_type(pdf, pdf).
 
-:- predicate_options(codes_to_gv_file/3, 3, [
-  pass_to(file_to_gv/3, 3)
-]).
 :- predicate_options(file_to_gv/2, 2, [
   pass_to(file_to_gv/3, 3)
 ]).
@@ -53,27 +50,10 @@ user:prolog_file_type(pdf, pdf).
   output(+atom)
 ]).
 :- predicate_options(export_graph_to_gv_file/3, 3, [
-  pass_to(codes_to_gv_file/3, 3)
+  pass_to(file_to_gv/3, 3)
 ]).
 
 
-
-
-
-%! codes_to_gv_file(
-%!   +Codes:list(code),
-%!   ?OutputFile:atom,
-%!   +Options:list(nvpair)
-%! ) is det.
-
-codes_to_gv_file(Codes, OutputFile, Options):-
-  absolute_file_name(data(tmp), TmpFile, [access(write),extensions([dot])]),
-  setup_call_cleanup(
-    open(TmpFile, write, Write, [encoding(utf8)]),
-    put_codes(Write, Codes),
-    close(Write)
-  ),
-  file_to_gv(TmpFile, OutputFile, Options).
 
 
 
@@ -120,7 +100,7 @@ file_to_gv(InputFile, OutputFile, Options):-
   handle_process(
     Method,
     [OutputTypeFlag,file(InputFile),OutputFileFlag],
-    [detached(true),program(Program)]
+    [program(Program)]
   ).
 
 
@@ -142,19 +122,30 @@ file_to_gv(InputFile, OutputFile, Options):-
 
 export_graph_to_gv_file(ExportGraph, OutputFile, Options):-
   once(phrase(gv_graph(ExportGraph), Codes)),
-  codes_to_gv_file(Codes, OutputFile, Options).
+  
+  % Be thread-safe.
+  thread_self(Id),
+  atomic_list_concat([gv_file,Id], '_', ThreadName),
+  absolute_file_name(
+    data(ThreadName),
+    TmpFile,
+    [access(write),extensions([dot])]
+  ),
+  setup_call_cleanup(
+    open(TmpFile, write, Write, [encoding(utf8)]),
+    put_codes(Write, Codes),
+    close(Write)
+  ),
+  file_to_gv(TmpFile, OutputFile, Options).
 
 
 
 %! open_dot(+File:atom) is det.
 % Opens the given DOT file.
-%
-% @tbd Test support on Windows.
-% @tbd Test support on OS-X.
 
 open_dot(File):-
   once(find_program_by_file_type(dot, Program)),
-  handle_process(Program, [File], [program('GraphViz DOT')]).
+  handle_process(Program, [file(File)], []).
 
 
 

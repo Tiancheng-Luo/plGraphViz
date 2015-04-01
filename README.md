@@ -48,7 +48,6 @@ $ git submodule update --init
 
 ~~~prolog
 $ swipl run.pl
-?- use_module(plGraphViz(gv_file)).
 ?- export_graph_to_gv_file(
      graph([vertex(1,[]),vertex(2,[])],[edge(1,2,[])],[]),
      File,
