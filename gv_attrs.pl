@@ -119,8 +119,8 @@ check_minimum(V, Min1):-
 %! assert_gv_attr_row(+Row:list(atom)) is det.
 
 assert_gv_attr_row([Name,UsedBy1,Types1,Default1,Minimum,Notes]):-
-  dcg_phrase(translate_usedby(UsedBy2), UsedBy1),
-  once(dcg_phrase(translate_type(Types2), Types1)),
+  atom_phrase(translate_usedby(UsedBy2), UsedBy1),
+  once(atom_phrase(translate_type(Types2), Types1)),
   sort(UsedBy2, UsedBy3),
   translate_default(Default1, Default2),
   assert_gv_attr(Name, UsedBy3, Types2, Default2, Minimum, Notes).
