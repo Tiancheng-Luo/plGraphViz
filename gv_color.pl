@@ -34,7 +34,7 @@
 :- use_module(plc(io/file_gnu)).
 
 :- use_module(plHtml(html)).
-:- use_module(plHtml(elements/html_table)).
+:- use_module(plHtml(element/html_table)).
 
 :- db_add_novel(user:prolog_file_type(log, logging)).
 

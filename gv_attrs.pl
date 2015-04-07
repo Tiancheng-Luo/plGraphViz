@@ -28,7 +28,7 @@ Support for GraphViz attributes.
 :- use_module(plc(io/file_gnu)).
 
 :- use_module(plHtml(html)).
-:- use_module(plHtml(elements/html_table)).
+:- use_module(plHtml(element/html_table)).
 
 :- use_module(plGraphViz(gv_attr_type), [gv_attr_type/1]).
 
