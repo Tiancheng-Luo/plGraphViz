@@ -113,7 +113,7 @@ file_to_gv(InputFile, OutputFile, Options):-
 % Returns a file containing a GraphViz visualization of the given graph.
 %
 % The following options are supported:
-%   - `method(+Method:atom`
+%   - `method(+Method:atom)`
 %     The algorithm used by GraphViz for positioning the tree nodes.
 %     Either =dot= (default) or =sfdp=.
 %   - `output(+FileType:atom)`
@@ -122,7 +122,7 @@ file_to_gv(InputFile, OutputFile, Options):-
 
 export_graph_to_gv_file(ExportGraph, OutputFile, Options):-
   once(phrase(gv_graph(ExportGraph), Codes)),
-  
+
   % Be thread-safe.
   thread_self(Id),
   atomic_list_concat([gv_file,Id], '_', ThreadName),
