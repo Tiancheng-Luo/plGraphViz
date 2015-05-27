@@ -26,6 +26,7 @@ a_list = ID "=" ID [","] [a_list]
 */
 
 :- use_module(library(apply)).
+:- use_module(library(dcg/basics)).
 :- use_module(library(lists), except([delete/3,subset/2])).
 :- use_module(library(ordsets)).
 

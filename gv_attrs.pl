@@ -15,6 +15,7 @@ Support for GraphViz attributes.
 */
 
 :- use_module(library(apply)).
+:- use_module(library(dcg/basics)).
 :- use_module(library(persistency)).
 :- use_module(library(xpath)).
 

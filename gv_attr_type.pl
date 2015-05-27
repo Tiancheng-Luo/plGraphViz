@@ -49,7 +49,7 @@
 @version 2014/06, 2014/11-2015/01
 */
 
-:- use_module(library(dcg/basics), [float//1,integer//1]).
+:- use_module(library(dcg/basics)).
 
 :- use_module(plc(dcg/dcg_abnf)).
 :- use_module(plc(dcg/dcg_ascii)).
