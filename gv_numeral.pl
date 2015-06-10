@@ -16,6 +16,7 @@
 :- use_module(plc(dcg/dcg_ascii)).
 :- use_module(plc(dcg/dcg_cardinal)).
 :- use_module(plc(math/math_ext)).
+:- use_module(plc(math/positional)).
 :- use_module(plc(math/radix)).
 :- use_module(plc(math/rational_ext)).
 
@@ -56,7 +57,7 @@ gv_numeral(N) -->
       (   % [1] The fractional is zero, so only write the integer part
           %     and do not write the decimal separator.
           {F =:= 0}
-      ->  {weights_nonneg(IW, I)},
+      ->  {positional(I, IW)},
           '[0-9]+'(IW)
       ;   % [2] The integer part is zero, so only write the fractional part,
           %     preceded by the decimal separator.
@@ -66,7 +67,7 @@ gv_numeral(N) -->
           '[0-9]*'(FW)
       ;   % [3] Both the integer part and the fractional are non-zero,
           %     so write both of them, with the decimal separator in-between.
-          {weights_nonneg(IW, I)},
+          {positional(I, IW)},
           '[0-9]+'(IW),
           ".",
           {weights_fraction(FW, F)},

@@ -22,8 +22,8 @@
 :- use_module(library(persistency)).
 :- use_module(library(xpath)).
 
-:- use_module(plc(dcg/abnf_core_rules)).
 :- use_module(plc(dcg/dcg_abnf)).
+:- use_module(plc(dcg/dcg_abnf_rules)).
 :- use_module(plc(dcg/dcg_atom)).
 :- use_module(plc(dcg/dcg_cardinal)).
 :- use_module(plc(dcg/dcg_content)).
