@@ -1,40 +1,24 @@
 :- module(
   gv_file,
   [
-    file_to_gv/2, % +InputFile:atom
-                  % +Options:list(nvpair)
-    file_to_gv/3, % +InputFile:atom
-                  % ?OutputFile:atom
-                  % +Options:list(nvpair)
-    export_graph_to_gv_file/3, % +ExportGraph:compound
-                               % ?OutputFile:atom
-                               % +Options:list(nvpair)
-    open_dot/1 % +File:file
+    gv_export/3 % +ExportGraph:compound
+                % +OutputFile:atom
+                % +Options:list(nvpair)
   ]
 ).
 
 /** <module> GraphViz file
 
-Predicates for converting GIF-formatted terms
-into GraphViz output files or SVG DOM structures.
-
-Also converts between GraphViz DOT formatted files
-and GraphViz output files or SVG DOM structures.
-
 @author Wouter Beek
-@version 2013/09, 2013/11-2014/01, 2014/05, 2014/07-2014/08, 2014/11-2014/12,
-         2015/03
+@version 2015/07
 */
 
+:- use_module(library(error)).
+:- use_module(library(gv/gv_dot)).
 :- use_module(library(option)).
 :- use_module(library(process)).
 
-:- use_module(plc(generics/code_ext)).
-:- use_module(plc(io/file_ext)).
 :- use_module(plc(process/process_ext)).
-:- use_module(plc(process/program_db)).
-
-:- use_module(plGraphViz(gv_dot)).
 
 :- dynamic(user:prolog_file_type/2).
 :- multifile(user:prolog_file_type/2).
@@ -42,29 +26,43 @@ and GraphViz output files or SVG DOM structures.
 user:prolog_file_type(dot, dot).
 user:prolog_file_type(pdf, pdf).
 
-:- predicate_options(file_to_gv/2, 2, [
-  pass_to(file_to_gv/3, 3)
-]).
-:- predicate_options(file_to_gv/3, 3, [
-  method(+atom),
-  output(+atom)
-]).
-:- predicate_options(export_graph_to_gv_file/3, 3, [
-  pass_to(file_to_gv/3, 3)
-]).
+:- predicate_options(gv_export/3, 3, [pass_to(file_to_gv/3, 3)]).
+:- predicate_options(file_to_gv/3, 3, [method(+atom),output(+atom)]).
 
 
 
+%! gv_export(
+%!   +ExportGraph:compound,
+%!   +OutputFile:atom,
+%!   +Options:list(nvpair)
+%! ) is det.
+% Returns a file containing a GraphViz visualization of the given graph.
+%
+% The following options are supported:
+%   - `method(+Method:atom)`
+%     The algorithm used by GraphViz for positioning the tree nodes.
+%     Either =dot= (default) or =sfdp=.
+%   - `output(+FileType:atom)`
+%     The file type of the generated GraphViz file.
+%     Default: `pdf`.
 
+gv_export(ExportGraph, OutputFile, Options):-
+  once(phrase(gv_graph(ExportGraph), Codes)),
 
-%! file_to_gv(+InputFile:atom, +Options:list(nvpair)) is det.
-
-file_to_gv(InputFile, Options):-
-  file_to_gv(InputFile, _, Options).
+  % Be thread-safe.
+  thread_self(Id),
+  atomic_list_concat([gv_file,Id], '_', ThreadName),
+  absolute_file_name(data(ThreadName), TmpFile, [access(write),file_type(dot)]),
+  setup_call_cleanup(
+    open(TmpFile, write, Write, [encoding(utf8)]),
+    put_codes(Write, Codes),
+    close(Write)
+  ),
+  file_to_gv(TmpFile, OutputFile, Options).
 
 %! file_to_gv(
 %!   +InputFile:atom,
-%!   ?OutputFile:atom,
+%!   +OutputFile:atom,
 %!   +Options:list(nvpair)
 %! ) is det.
 % Converts a GraphViz DOT file to an image file, using a specific
@@ -87,12 +85,6 @@ file_to_gv(InputFile, OutputFile, Options):-
   findall(OutputType0, gv_output_type(OutputType0), OutputTypes),
   must_be(oneof(OutputTypes), OutputType),
 
-  % The output file is either given or created.
-  (   var(OutputFile)
-  ->  file_alternative(InputFile, _, _, OutputType, OutputFile)
-  ;   is_absolute_file_name(OutputFile)
-  ),
-
   % Run the GraphViz conversion command in the shell.
   format(atom(OutputTypeFlag), '-T~a', [OutputType]),
   format(atom(OutputFileFlag), '-o~a', [OutputFile]),
@@ -105,53 +97,7 @@ file_to_gv(InputFile, OutputFile, Options):-
 
 
 
-%! export_graph_to_gv_file(
-%!   +ExportGraph:compound,
-%!   ?OutputFile:atom,
-%!   +Options:list(nvpair)
-%! ) is det.
-% Returns a file containing a GraphViz visualization of the given graph.
-%
-% The following options are supported:
-%   - `method(+Method:atom)`
-%     The algorithm used by GraphViz for positioning the tree nodes.
-%     Either =dot= (default) or =sfdp=.
-%   - `output(+FileType:atom)`
-%     The file type of the generated GraphViz file.
-%     Default: `pdf`.
-
-export_graph_to_gv_file(ExportGraph, OutputFile, Options):-
-  once(phrase(gv_graph(ExportGraph), Codes)),
-
-  % Be thread-safe.
-  thread_self(Id),
-  atomic_list_concat([gv_file,Id], '_', ThreadName),
-  absolute_file_name(
-    data(ThreadName),
-    TmpFile,
-    [access(write),extensions([dot])]
-  ),
-  setup_call_cleanup(
-    open(TmpFile, write, Write, [encoding(utf8)]),
-    put_codes(Write, Codes),
-    close(Write)
-  ),
-  file_to_gv(TmpFile, OutputFile, Options).
-
-
-
-%! open_dot(+File:atom) is det.
-% Opens the given DOT file.
-
-open_dot(File):-
-  once(find_program_by_file_type(dot, Program)),
-  handle_process(Program, [file(File)], []).
-
-
-
-
-
-% HELPERS
+% HELPERS %
 
 gv_method(circo).
 gv_method(dot).
@@ -160,7 +106,6 @@ gv_method(neato).
 gv_method(osage).
 gv_method(sfdp).
 gv_method(twopi).
-
 
 
 gv_output_type(bmp).
