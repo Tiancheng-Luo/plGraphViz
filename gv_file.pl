@@ -18,8 +18,6 @@
 :- use_module(library(option)).
 :- use_module(library(process)).
 
-:- use_module(plc(process/process_ext)).
-
 :- dynamic(user:prolog_file_type/2).
 :- multifile(user:prolog_file_type/2).
 
@@ -88,11 +86,10 @@ file_to_gv(InputFile, OutputFile, Options):-
   % Run the GraphViz conversion command in the shell.
   format(atom(OutputTypeFlag), '-T~a', [OutputType]),
   format(atom(OutputFileFlag), '-o~a', [OutputFile]),
-  atomic_list_concat(['GraphViz',Method], ' ', Program),
-  handle_process(
-    Method,
+  process_ext(
+    path(Method),
     [OutputTypeFlag,file(InputFile),OutputFileFlag],
-    [program(Program)]
+    []
   ).
 
 

@@ -6,34 +6,25 @@
   ]
 ).
 
-/** <module> GraphViz: Attributes
-
-Support for GraphViz attributes.
+/** <module> GraphViz attributes
 
 @author Wouter Beek
-@version 2014/06, 2014/11-2014/12, 2015/03
+@version 2015/07
 */
 
 :- use_module(library(apply)).
 :- use_module(library(dcg/basics)).
+:- use_module(library(lists)).
 :- use_module(library(persistency)).
 :- use_module(library(xpath)).
 
-:- use_module(plc(dcg/dcg_atom)).
-:- use_module(plc(dcg/dcg_content)).
-:- use_module(plc(dcg/dcg_meta)).
-:- use_module(plc(dcg/dcg_generics)).
-:- use_module(plc(generics/db_ext)).
-:- use_module(plc(generics/print_ext)).
-:- use_module(plc(io/file_ext)).
-:- use_module(plc(io/file_gnu)).
-
-:- use_module(plHtml(html)).
-:- use_module(plHtml(html_table)).
-
 :- use_module(plGraphViz(gv_attr_type), [gv_attr_type/1]).
+:- use_module(plGraphViz(gv_util)).
 
-:- db_add_novel(user:prolog_file_type(log, logging)).
+:- dynamic(user:prolog_file_type/2).
+:- multifile(user:prolog_file_type/2).
+
+user:prolog_file_type(log, logging).
 
 %! gv_attr(
 %!   ?Name:atom,
@@ -131,13 +122,13 @@ assert_gv_attr_row([Name,UsedBy1,Types1,Default1,Minimum,Notes]):-
 % Downloads the table describing GraphViz attributes from `graphviz.org`.
 
 gv_attrs_download:-
-  report_on_process(
+  verbose_process(
     'Updating GraphViz attributes table... ',
     (
       gv_attrs_uri(Uri),
-      download_html_dom(Uri, Dom, [dialect(html5),silent(true)]),
+      html_download(Uri, Dom),
       xpath(Dom, //table(@align=lower_case(center)), TableDom),
-      html_to_table(TableDom, _, Rows),
+      html_table(TableDom, _, Rows),
       maplist(assert_gv_attr_row, Rows)
     )
   ).
@@ -146,20 +137,17 @@ gv_attrs_download:-
 %! gv_attrs_file(-File:atom) is det.
 
 gv_attrs_file(File):-
-  absolute_file_name(
-    data(gv_attrs),
-    File,
-    [access(write),file_type(logging)]
-  ).
+  absolute_file_name(gv_attrs, File, [access(write),file_type(logging)]).
 
 
 %! gv_attrs_init is det.
 
 gv_attrs_init:-
   gv_attrs_file(File),
-  safe_db_attach(File),
+  persistent_db_attach(File),
   file_age(File, Age),
   gv_attrs_update(Age).
+
 
 
 %! gv_attrs_update(+Age:float) is det.
@@ -174,19 +162,11 @@ gv_attrs_update(_):-
   gv_attrs_download.
 
 
+
 %! gv_attrs_uri(-Url:url) is det.
 
 gv_attrs_uri('http://www.graphviz.org/doc/info/attrs.html').
 
-
-%! safe_db_attach(+File:atom) is det.
-
-safe_db_attach(File):-
-  exists_file(File), !,
-  db_attach(File, []).
-safe_db_attach(File):-
-  touch_file(File),
-  safe_db_attach(File).
 
 
 %! translate_default(+Default1:atom, -Default2:atom) is det.
@@ -198,24 +178,36 @@ translate_default('<none>', _):- !.
 translate_default(Default, Default).
 
 
+
 %! translate_type(-Types:list(atom))// is det.
 
+translate_type([]) --> !, [].
 translate_type([H|T]) -->
   {gv_attr_type(H)},
   atom(H),
   whites,
   translate_type(T).
-translate_type([]) --> !, [].
+
 
 
 %! translated_usedby(
 %!   -UsedBy:list(oneof([cluster,edge,graph,node,subgraph]))
 %! )// is det.
 
-translate_usedby([cluster|T]) --> `C`, !, translate_usedby(T).
-translate_usedby([edge|T]) --> `E`, !, translate_usedby(T).
-translate_usedby([graph|T]) --> `G`, !, translate_usedby(T).
-translate_usedby([node|T]) --> `N`, !, translate_usedby(T).
-translate_usedby([subgraph|T]) --> `S`, !, translate_usedby(T).
-translate_usedby([]) --> [].
-
+translate_usedby([cluster|T]) -->
+  "C", !,
+  translate_usedby(T).
+translate_usedby([edge|T]) -->
+  "E", !,
+  translate_usedby(T).
+translate_usedby([graph|T]) -->
+  "G", !,
+  translate_usedby(T).
+translate_usedby([node|T]) -->
+  "N", !,
+  translate_usedby(T).
+translate_usedby([subgraph|T]) -->
+  "S", !,
+  translate_usedby(T).
+translate_usedby([]) -->
+  "".

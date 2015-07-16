@@ -56,34 +56,41 @@
 
 color(rgb(Red,Green,Blue)) --> !,
   "#",
-  '#'(3, hex_color, [Red,Green,Blue], []).
+  hex_color(Red),
+  hex_color(Green),
+  hex_color(Blue).
 color(rgbs(Red,Green,Blue,Alpha)) --> !,
-  "#",
-  '#'(4, hex_color, [Red,Green,Blue,Alpha], []).
+  color(rgb(Red,Green,Blue)),
+  hex_color(Alpha).
 color(hsv(Hue,Saturation,Value)) --> !,
-  '#'(3, hsv_color, [Hue,Saturation,Value], []).
+  hsv_color(Hue),
+  hsv_color(Saturation),
+  hsv_color(Value).
 color(Name) -->
   {gv_color(_, Name)},
   atom(Name).
 
 hex_color(I) -->
-  {W1 is I / 16},
-  'HEX'(W1),
-  {W2 is I mod 16},
-  'HEX'(W2).
+  xinteger(I).
 
 hsv_color(D, Head, Tail):-
   format(codes(Head,Tail), '~2f', [D]).
 
 
+
 %! colorList(+Pairs:list(pair(compound,float)))// .
 
-colorList(Pairs) -->
-  '+'(wc, Pairs, []).
+colorList([H]) --> !,
+  wc(H).
+colorList([H|T]) -->
+  wc(H),
+  colorList(T).
 
 wc(Color-Float) -->
   color(Color),
-  '?'(wc_weight(Float), []).
+  (   wc_weight(Float)
+  ;   ""
+  ).
 
 wc_weight(Float) -->
   ";",

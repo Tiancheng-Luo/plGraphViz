@@ -51,15 +51,6 @@
 
 :- use_module(library(dcg/basics), except([string//1])).
 
-:- use_module(plc(dcg/dcg_abnf)).
-:- use_module(plc(dcg/dcg_ascii)).
-:- use_module(plc(dcg/dcg_atom)).
-:- use_module(plc(dcg/dcg_cardinal)).
-:- use_module(plc(dcg/dcg_content)).
-:- use_module(plc(dcg/dcg_generics)).
-:- use_module(plc(dcg/dcg_quote)).
-:- use_module(plc(dcg/dcg_replace)).
-
 :- use_module(plGraphViz(gv_html)).
 
 
@@ -203,25 +194,32 @@ double(N) -->
 
 %! doubleList(+Doubles:list(float))// .
 
-doubleList(L) -->
-  '+'(double, L, [separator(colon)]).
+doubleList([]) --> !, "".
+doubleList([H]) --> !, double(H)
+doubleList([H|T]) --> double(H), ":", doubleList(T).
 
 
 
 %! escString(+String:atom)// .
 % @tbd Support for context-dependent replacements.
 
-escString(String) -->
+escString(S1) -->
   {
-    atom_phrase(
-      dcg_replace(double_quote, escaped_double_quote),
-      String,
-      String0
-    )
+    atom_codes(S1, Cs1),
+    phrase(escape_double_quotes, Cs1, Cs2),
+    atom_codes(S2, Cs2)
   },
-  quoted(atom(String0)).
-escaped_double_quote -->
-  "\\\"".
+  "\"",
+  atom(S2),
+  "\"".
+
+escape_double_quotes, [92,34] -->
+  [34], !,
+  escape_double_quotes.
+escape_double_quotes, [X] -->
+  [X],
+  escape_double_quotes.
+
 
 
 
@@ -449,7 +447,9 @@ smoothType(triangle).
 % A GraphViz string.
 
 string(Content) -->
-  quoted(atom(Content)).
+  "\"",
+  atom(Content),
+  "\"".
 
 
 

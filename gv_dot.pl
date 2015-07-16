@@ -30,19 +30,8 @@ a_list = ID "=" ID [","] [a_list]
 :- use_module(library(lists), except([delete/3,subset/2])).
 :- use_module(library(ordsets)).
 
-:- use_module(plc(dcg/dcg_abnf)).
-:- use_module(plc(dcg/dcg_arrow)).
-:- use_module(plc(dcg/dcg_ascii)).
-:- use_module(plc(dcg/dcg_atom)).
-:- use_module(plc(dcg/dcg_bracket)).
-:- use_module(plc(dcg/dcg_content)).
-:- use_module(plc(dcg/dcg_generics)).
-:- use_module(plc(dcg/dcg_meta)).
-:- use_module(plc(dcg/dcg_quote)).
-
 :- use_module(plGraphViz(gv_attrs)).
 :- use_module(plGraphViz(gv_html)).
-:- use_module(plGraphViz(gv_numeral)).
 
 
 
@@ -90,7 +79,7 @@ gv_compass_pt(w) --> "w".
 %                   undirected (operator `--`).
 
 gv_edge_operator(false) --> !, "--".
-gv_edge_operator(true) --> arrow(right, 2).
+gv_edge_operator(true) --> "->".
 
 
 
@@ -120,7 +109,9 @@ gv_edge_statement(I, Directed, edge(FromId,ToId,EAttrs)) -->
   
   % We want `colorscheme/1` from the edges and
   % `directionality/1` from the graph.
-  bracketed(square, '*'(gv_attr(edge), EAttrs, [])),
+  "[",
+  gv_attrs(edge, EAttrs),
+  "]",
   line_feed.
 
 
@@ -184,11 +175,14 @@ gv_id(html_like_label(Content)) --> !,
 % Double-quoted strings.
 % The quotes are already part of the given atom.
 gv_id(double_quoted_string(Atom)) --> !,
-  quoted(atom(Atom)).
+  "\"",
+  atom(Atom),
+  "\"".
 % Numerals.
 gv_id(N) -->
   {number(N)}, !,
-  gv_numeral(N).
+  % @tbd Use gv_numeral//1.
+  number(N).
 % Alpha-numeric strings.
 gv_id(Atom) -->
   {atom_codes(Atom, [H|T])},
@@ -198,8 +192,10 @@ gv_id(Atom) -->
   % GraphViz keyword.
   {\+ gv_keyword([H|T])}.
 
-gv_id_first(X) --> ascii_letter(X).
-gv_id_first(X) --> underscore(X).
+gv_id_first(X) -->
+  ascii_alpha(X).
+gv_id_first(X) -->
+  underscore(X).
 
 gv_id_rest([]) --> [].
 gv_id_rest([H|T]) -->
@@ -213,10 +209,10 @@ gv_id_rest([H|T]) -->
 %! gv_keyword(+Codes:list(code)) is semidet.
 % Succeeds if the given codes for a GraphViz reserved keyword.
 
-gv_keyword(Codes):-
+gv_keyword(Cs):-
   % Obviously, the keywords do not occur on the difference list input.
   % So we must use phrase/[2,3].
-  phrase(gv_keyword, Codes).
+  phrase(gv_keyword, Cs).
 
 %! gv_keyword// .
 % GraphViz has reserved keywords that cannot be used as identifiers.
@@ -260,18 +256,23 @@ gv_node_id(Id) -->
 
 gv_node_statement(I, vertex(Id,VAttrs)) -->
   indent(I),
-  gv_node_id(Id), " ",
-  bracketed(square, '*'(gv_attr(node), VAttrs, [])),
-  line_feed.
+  gv_node_id(Id),
+  " [",
+  gv_attrs(node, VAttrs),
+  "\n".
 
 
 
 gv_port -->
   gv_port_location,
-  '?'(gv_port_angle, []).
+  (   gv_port_angle
+  ;   ""
+  ).
 gv_port -->
   gv_port_angle,
-  '?'(gv_port_location, []).
+  (   gv_port_location
+  ;   ""
+  ).
 gv_port -->
   ":",
   gv_compass_pt(_).
@@ -284,38 +285,31 @@ gv_port_location -->
   ":",
   gv_id(_).
 gv_port_location -->
-  ":",
-  bracketed(
-    round,
-    (
-      gv_id(_),
-      ",",
-      gv_id(_)
-    )
-  ).
+  ":(",
+  gv_id(_),
+  ",",
+  gv_id(_)
+  ")".
 
 
 
 gv_ranked_node_collection(I, rank(Rank_V_Term,Content_V_Terms)) -->
   indent(I),
-  bracketed(curly, (
-    line_feed,
-
-    % The rank attribute.
-    {NewI is I + 1},
-    indent(NewI),
-    gv_attr(subgraph, rank=same),
-    ";",
-    line_feed,
-
-    % Vertice statements.
-    '*'(
-      gv_node_statement(NewI),
-      [Rank_V_Term|Content_V_Terms],
-      []
-    ),
-
-    % We want to indent the closing curly brace.
-    indent(I)
-  )),
-  line_feed.
+  "{\n",
+  
+  % The rank attribute.
+  {NewI is I + 1},
+  indent(NewI),
+  gv_attr(subgraph, rank=same),
+  ";\n",
+  
+  % Vertice statements.
+  '*'(
+    gv_node_statement(NewI),
+    [Rank_V_Term|Content_V_Terms],
+    []
+  ),
+  
+  % We want to indent the closing curly brace.
+  indent(I),
+  "\n".

@@ -56,7 +56,9 @@ cell:   <TD> label </TD>
 %! gv_html_like_label(?Content:compound)// .
 
 gv_html_like_label(Content) -->
-  bracketed(angular, label(Content)).
+  "<",
+  label(Content),
+  ">".
 
 
 
