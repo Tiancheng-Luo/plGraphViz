@@ -36,7 +36,7 @@
   ]
 ).
 :- reexport(
-  plGraphViz(gv_color),
+  library(gv/gv_color),
   [
     color//1, % +Color:compound
     colorList//1 % +ColorList:list(compound)
@@ -46,12 +46,15 @@
 /** <module> GraphViz attribute types
 
 @author Wouter Beek
-@version 2014/06, 2014/11-2015/01
+@version 2015/07
 */
 
 :- use_module(library(dcg/basics), except([string//1])).
-
-:- use_module(plGraphViz(gv_html)).
+:- use_module(library(dcg/dcg_abnf)).
+:- use_module(library(dcg/dcg_ascii)).
+:- use_module(library(dcg/dcg_phrase)).
+:- use_module(library(dcg/dcg_quoted)).
+:- use_module(library(gv/gv_html)).
 
 
 
@@ -194,9 +197,8 @@ double(N) -->
 
 %! doubleList(+Doubles:list(float))// .
 
-doubleList([]) --> !, "".
-doubleList([H]) --> !, double(H)
-doubleList([H|T]) --> double(H), ":", doubleList(T).
+doubleList(L) -->
+  '*'(double, L, [separator(colon)]).
 
 
 
@@ -204,14 +206,8 @@ doubleList([H|T]) --> double(H), ":", doubleList(T).
 % @tbd Support for context-dependent replacements.
 
 escString(S1) -->
-  {
-    atom_codes(S1, Cs1),
-    phrase(escape_double_quotes, Cs1, Cs2),
-    atom_codes(S2, Cs2)
-  },
-  "\"",
-  atom(S2),
-  "\"".
+  {atom_phrase(escape_double_quotes, S1, S2)},
+  quoted(atom(S2)).
 
 escape_double_quotes, [92,34] -->
   [34], !,
@@ -285,9 +281,7 @@ pagedir('TR').
 % `point(X:float,Y:float,Changeable:boolean)`.
 
 point(point(X,Y,Changeable)) -->
-  float(X),
-  ",",
-  float(Y),
+  '#'(2, float, [X,Y], [separator(comma)]),
   input_changeable(Changeable).
 
 input_changeable(false) --> "".
@@ -348,10 +342,12 @@ rankdir('TB').
 %! rect(+Rectangle:compound)// .
 
 rect(rect(LowerLeftX,LowerLeftY,UpperRightX,UpperRightY)) -->
-  float(LowerLeftX), ",",
-  float(LowerLeftY), ",",
-  float(UpperRightX), ",",
-  float(UpperRightY).
+  '#'(
+    4,
+    float,
+    [LowerLeftX,LowerLeftY,UpperRightX,UpperRightY],
+    [separator(comma)]
+  ).
 
 
 
@@ -447,9 +443,7 @@ smoothType(triangle).
 % A GraphViz string.
 
 string(Content) -->
-  "\"",
-  atom(Content),
-  "\"".
+  quoted(atom(Content)).
 
 
 

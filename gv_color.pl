@@ -18,7 +18,7 @@
 
 :- use_module(library(apply)).
 :- use_module(library(dcg/basics)).
-:- use_module(library(lists), except([delete/3,subset/2])).
+:- use_module(library(lists)).
 :- use_module(library(persistency)).
 :- use_module(library(xpath)).
 
@@ -56,16 +56,12 @@
 
 color(rgb(Red,Green,Blue)) --> !,
   "#",
-  hex_color(Red),
-  hex_color(Green),
-  hex_color(Blue).
+  '#'(3, hex_color, [Red,Green,Blue], []).
 color(rgbs(Red,Green,Blue,Alpha)) --> !,
   color(rgb(Red,Green,Blue)),
   hex_color(Alpha).
 color(hsv(Hue,Saturation,Value)) --> !,
-  hsv_color(Hue),
-  hsv_color(Saturation),
-  hsv_color(Value).
+  '#'(3, hsv_color, [Hue,Saturation,Value], []).
 color(Name) -->
   {gv_color(_, Name)},
   atom(Name).
@@ -80,11 +76,8 @@ hsv_color(D, Head, Tail):-
 
 %! colorList(+Pairs:list(pair(compound,float)))// .
 
-colorList([H]) --> !,
-  wc(H).
-colorList([H|T]) -->
-  wc(H),
-  colorList(T).
+colorList(L) -->
+  '+'(wc, L, []).
 
 wc(Color-Float) -->
   color(Color),
@@ -105,11 +98,11 @@ wc_weight(Float) -->
 %! gv_color_download is det.
 
 gv_color_download:-
-  report_on_process(
+  verbose_call(
     'Updating the GraphViz color table...',
     (
       gv_color_uri(Uri),
-      download_html_dom(Uri, Dom, [html_dialect(html4),silent(true)]),
+      html_download(Uri, Dom),
       xpath(Dom, //table(1), TableDom1),
       xpath(Dom, //table(2), TableDom2),
       maplist(assert_color_table, [x11,svg], [TableDom1,TableDom2])
@@ -117,7 +110,7 @@ gv_color_download:-
   ).
 
 assert_color_table(Colorscheme, TableDom):-
-  html_to_table(TableDom, _, Rows),
+  html_table(TableDom, _, Rows),
   append(Rows, Cells),
   forall(
     member(Cell, Cells),
@@ -157,4 +150,3 @@ gv_color_update(_):-
 %! gv_color_uri(-Url:url) is det.
 
 gv_color_uri('http://www.graphviz.org/doc/info/colors.html').
-

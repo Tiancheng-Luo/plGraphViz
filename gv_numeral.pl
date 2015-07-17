@@ -11,14 +11,14 @@
 @version 2014/05-2014/06, 2015/01
 */
 
-:- use_module(plc(dcg/dcg_abnf)).
-:- use_module(plc(dcg/dcg_abnf_common)).
-:- use_module(plc(dcg/dcg_ascii)).
-:- use_module(plc(dcg/dcg_cardinal)).
-:- use_module(plc(math/math_ext)).
-:- use_module(plc(math/positional)).
-:- use_module(plc(math/radix)).
-:- use_module(plc(math/rational_ext)).
+:- use_module(library(dcg/dcg_abnf)).
+:- use_module(library(dcg/dcg_abnf_common)).
+:- use_module(library(dcg/dcg_ascii)).
+:- use_module(library(dcg/dcg_cardinal)).
+:- use_module(library(math/math_ext)).
+:- use_module(library(math/positional)).
+:- use_module(library(math/radconv)).
+:- use_module(library(math/rational_ext)).
 
 
 
@@ -63,14 +63,14 @@ gv_numeral(N) -->
           %     preceded by the decimal separator.
           {I =:= 0}
       ->  ".",
-          {weights_fraction(FW, F)},
+          {positional_fraction(FW, F)},
           '[0-9]*'(FW)
       ;   % [3] Both the integer part and the fractional are non-zero,
           %     so write both of them, with the decimal separator in-between.
           {positional(I, IW)},
           '[0-9]+'(IW),
           ".",
-          {weights_fraction(FW, F)},
+          {positional_fraction(FW, F)},
           '[0-9]*'(FW)
       )
   ;   '[-]?'(Sg),

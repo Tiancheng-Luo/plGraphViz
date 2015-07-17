@@ -13,13 +13,18 @@
 */
 
 :- use_module(library(apply)).
+:- use_module(library(deb_ext)).
 :- use_module(library(dcg/basics)).
+:- use_module(library(dcg/dcg_call)).
+:- use_module(library(dcg/dcg_phrase)).
+:- use_module(library(file_ext)).
+:- use_module(library(http/html_download)).
+:- use_module(library(http/html_table)).
 :- use_module(library(lists)).
-:- use_module(library(persistency)).
+:- use_module(library(persistency_ext)).
 :- use_module(library(xpath)).
 
-:- use_module(plGraphViz(gv_attr_type), [gv_attr_type/1]).
-:- use_module(plGraphViz(gv_util)).
+:- use_module(library(gv/gv_attr_type), [gv_attr_type/1]).
 
 :- dynamic(user:prolog_file_type/2).
 :- multifile(user:prolog_file_type/2).
@@ -144,7 +149,7 @@ gv_attrs_file(File):-
 
 gv_attrs_init:-
   gv_attrs_file(File),
-  persistent_db_attach(File),
+  attach_persistent_db(File),
   file_age(File, Age),
   gv_attrs_update(Age).
 

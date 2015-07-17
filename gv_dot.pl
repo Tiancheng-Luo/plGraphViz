@@ -1,7 +1,6 @@
 :- module(
   gv_dot,
   [
-    gv_graph//1 % +Graph:compound
   ]
 ).
 
@@ -22,16 +21,18 @@ a_list = ID "=" ID [","] [a_list]
 
 @author Wouter Beek
 @see http://www.graphviz.org/content/dot-language
-@version 2013/07, 2013/09, 2014/03-2014/06, 2014/11-2014/12
+@version 2015/07
 */
 
 :- use_module(library(apply)).
 :- use_module(library(dcg/basics)).
-:- use_module(library(lists), except([delete/3,subset/2])).
+:- use_module(library(dcg/dcg_ascii)).
+:- use_module(library(dcg/dcg_bracketed)).
+:- use_module(library(dcg/dcg_content)).
+:- use_module(library(gv/gv_attrs)).
+:- use_module(library(gv/gv_html)).
+:- use_module(library(lists)).
 :- use_module(library(ordsets)).
-
-:- use_module(plGraphViz(gv_attrs)).
-:- use_module(plGraphViz(gv_html)).
 
 
 
@@ -44,11 +45,21 @@ a_list = ID "=" ID [","] [a_list]
 % A single GraphViz attribute.
 % We assume that the attribute has already been validated.
 
-gv_attr(Context, Name=Value) -->
-  gv_id(Name),
+gv_attr(Context, N=V) -->
+  gv_id(N),
   "=",
-  gv_attr_value(Context, Name=Value),
+  gv_attr_value(Context, N=V),
   ";".
+
+
+
+%! gv_attrs(
+%!   +Kind:oneof([edge,graph,node]),
+%!   +Attributes:list(compound)
+%! )// is det.
+
+gv_attrs(Kind, L) -->
+  bracketed(square, '*'(gv_attr, L, [])).
 
 
 
@@ -76,7 +87,7 @@ gv_compass_pt(w) --> "w".
 % undirected.
 %
 % @arg Directed Whether an edge is directed (operator `->`) or
-%                   undirected (operator `--`).
+%               undirected (operator `--`).
 
 gv_edge_operator(false) --> !, "--".
 gv_edge_operator(true) --> "->".
@@ -109,10 +120,8 @@ gv_edge_statement(I, Directed, edge(FromId,ToId,EAttrs)) -->
   
   % We want `colorscheme/1` from the edges and
   % `directionality/1` from the graph.
-  "[",
   gv_attrs(edge, EAttrs),
-  "]",
-  line_feed.
+  "\n".
 
 
 
@@ -137,14 +146,8 @@ gv_generic_attributes_statement(_, _, []) --> [], !.
 gv_generic_attributes_statement(Kind, I, KindAttrs) -->
   indent(I),
   gv_kind(Kind), " ",
-  "[",
   gv_attrs(Kind, KindAttrs),
-  "]\n".
-
-gv_attrs(_, []) --> !, "".
-gv_attrs(Kind, [H|T]) -->
-  gv_attr(Kind, H),
-  gv_attrs(Kind, T).
+  "\n".
 
 
 
@@ -175,9 +178,7 @@ gv_id(html_like_label(Content)) --> !,
 % Double-quoted strings.
 % The quotes are already part of the given atom.
 gv_id(double_quoted_string(Atom)) --> !,
-  "\"",
-  atom(Atom),
-  "\"".
+  quoted(atom(Atom)).
 % Numerals.
 gv_id(N) -->
   {number(N)}, !,
@@ -193,7 +194,7 @@ gv_id(Atom) -->
   {\+ gv_keyword([H|T])}.
 
 gv_id_first(X) -->
-  ascii_alpha(X).
+  ascii_letter(X).
 gv_id_first(X) -->
   underscore(X).
 
@@ -257,7 +258,6 @@ gv_node_id(Id) -->
 gv_node_statement(I, vertex(Id,VAttrs)) -->
   indent(I),
   gv_node_id(Id),
-  " [",
   gv_attrs(node, VAttrs),
   "\n".
 
@@ -293,9 +293,12 @@ gv_port_location -->
 
 
 
-gv_ranked_node_collection(I, rank(Rank_V_Term,Content_V_Terms)) -->
+gv_ranked_node_collection(I, Rank) -->
   indent(I),
-  "{\n",
+  bracketed(curly, gv_ranked_node_collection0(I, Rank)).
+
+gv_ranked_node_collection0(I, rank(Rank_V_Term,Content_V_Terms)) -->
+  "\n",
   
   % The rank attribute.
   {NewI is I + 1},

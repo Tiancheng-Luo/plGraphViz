@@ -12,8 +12,12 @@
 */
 
 :- use_module(library(apply)).
+:- use_module(library(dcg/dcg_abnf)).
+:- use_module(library(dcg/dcg_content)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
+
+
 
 
 
@@ -145,20 +149,16 @@ gv_graph(G1, I) -->
   indent(I),
   "}\n".
 
-gv_edge_statements(_, _, []) --> !, "".
-gv_edge_statements(I, Dir, [H|T]) -->
-  gv_edge_statement(I, Dir, H),
-  gv_edge_statements(I, Dir, T).
+gv_edge_statements(I, Dir, L) -->
+  '*'(gv_edge_statement(I, Dir), L, []).
 
-gv_node_statements(_, []) --> !, "".
-gv_node_statements(I, [H|T]) -->
-  gv_node_statement(I, H),
-  gv_node_statements(I, T).
+gv_node_statements(I, L) -->
+  '*'(gv_node_statement(I), L, []).
 
-gv_ranked_node_collections(_, []) --> !, "".
-gv_ranked_node_collections(I, [H|T]) -->
-  gv_ranked_node_collection(I, H),
-  gv_ranked_node_collections(I, T),
+gv_ranked_node_collections(I, L) -->
+  '*'(gv_ranked_node_collection(I), L, []).
+
+
 
 
 
@@ -191,7 +191,7 @@ gv_graph_type(true) --> "digraph".
 % no multi-edges.
 % This only applies to directed graphs.
 
-gv_strict(false) --> [].
+gv_strict(false) --> "".
 gv_strict(true) --> "strict ".
 
 

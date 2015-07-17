@@ -40,14 +40,13 @@ cell:   <TD> label </TD>
 
 @author Wouter Beek
 @see http://www.graphviz.org/content/node-shapes#html
-@version 2013/07, 2013/09, 2014/03-2014/06, 2014/11
+@version 2015/07
 */
 
-:- use_module(plc(dcg/dcg_abnf)).
-:- use_module(plc(dcg/dcg_bracket)).
-:- use_module(plc(dcg/dcg_content)).
-
-:- use_module(plHtml(html_dcg)).
+:- use_module(library(dcg/dcg_abnf)).
+:- use_module(library(dcg/dcg_bracket)).
+:- use_module(library(dcg/dcg_content)).
+:- use_module(library(http/html_dcg)).
 
 
 
@@ -56,9 +55,7 @@ cell:   <TD> label </TD>
 %! gv_html_like_label(?Content:compound)// .
 
 gv_html_like_label(Content) -->
-  "<",
-  label(Content),
-  ">".
+  bracketed(angular, label(Content)).
 
 
 
@@ -262,7 +259,7 @@ textitem(String) -->
 
 
 
-% HELPERS
+% HELPERS %
 
 %! supported_html_element(+Name:atom) is semidet.
 %! supported_html_element(-Name:atom) is multi.
