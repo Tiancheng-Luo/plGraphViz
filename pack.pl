@@ -6,4 +6,4 @@ name(plGraphViz).
 packager('Wouter Beek', 'me@wouterbeek.com').
 requires('Prolog_Library_Collection').
 title(plGraphViz).
-version('0.0.1').
+version('0.0.2').
