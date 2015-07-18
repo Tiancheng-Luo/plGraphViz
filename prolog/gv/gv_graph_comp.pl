@@ -1,16 +1,21 @@
 :- module(
-  gv_dot,
+  gv_graph_comp,
   [
+    gv_edge_statement//3, % +Indent:nonneg
+                          % +Directed:boolean
+                          % +Edge:compound
+    gv_generic_attributes_statement//3, % +Kind:oneof([edge,graph,node])
+                                        % +Indent:nonneg
+                                        % +CategoryAttributes:list(compound)
+    gv_id//1, % +Name:compound
+    gv_node_statement//2, % +Indent:nonneg
+                          % +Vertex:compound
+    gv_ranked_node_collection//2 % +Indent:nonneg
+				 % +Rank:???    
   ]
 ).
 
-/** <module> GraphViz DOT generator
-
-DCG rules for GraphViz DOT file generation.
-
-Methods for writing to the GraphViz DOT format.
-
-In GraphViz vertices are called 'nodes'.
+/** <module> GraphViz graph components
 
 ```abnf
 attr_list = "[" [a_list] "]" [attr_list]
@@ -26,9 +31,11 @@ a_list = ID "=" ID [","] [a_list]
 
 :- use_module(library(apply)).
 :- use_module(library(dcg/basics)).
+:- use_module(library(dcg/dcg_abnf)).
 :- use_module(library(dcg/dcg_ascii)).
 :- use_module(library(dcg/dcg_bracketed)).
 :- use_module(library(dcg/dcg_content)).
+:- use_module(library(dcg/dcg_quoted)).
 :- use_module(library(gv/gv_attrs)).
 :- use_module(library(gv/gv_html)).
 :- use_module(library(lists)).
@@ -37,6 +44,131 @@ a_list = ID "=" ID [","] [a_list]
 
 
 
+
+%! gv_edge_statement(
+%!   +Indent:nonneg,
+%!   +Directed:boolean,
+%!   +Edge:compound
+%! )// is det.
+% A GraphViz statement describing an edge.
+%
+% @arg Indent The indentation level at which the edge statement is written.
+% @arg Directed Whether the graph is directed or not.
+% @arg GraphAttributes The attributes of the graph. Some of these attributes
+%      may be used in the edge statement (e.g., the colorscheme).
+% @arg Edge A compound term in the GIFormat, representing an edge.
+%
+% @tbd Instead of gv_node_id//1 we could have a gv_subgraph//1
+%      at the from and/or to location.
+% @tbd Add support for multiple, consecutive occurrences of gv_edge_rhs//2.
+
+gv_edge_statement(I, Dir, edge(From,To,Attrs)) -->
+  indent(I),
+
+  gv_node_id(From), " ",
+  gv_edge_operator(Dir), " ",
+  gv_node_id(To), " ",
+  
+  % We want `colorscheme/1` from the edges and
+  % `directionality/1` from the graph.
+  gv_attrs(edge, Attrs),
+  "\n".
+
+%! gv_edge_operator(+Directed:boolean)// .
+% The binary edge operator between two vertices.
+% The operator that is used depends on whether the graph is directed or
+% undirected.
+%
+% @arg Directed Whether an edge is directed (operator `->`) or
+%      undirected (operator `--`).
+
+gv_edge_operator(false) --> !, "--".
+gv_edge_operator(true) --> "->".
+
+
+
+%! gv_generic_attributes_statement(
+%!   +Kind:oneof([edge,graph,node]),
+%!   +Indent:nonneg,
+%!   +CategoryAttributes:list(nvpair)
+%! )//
+% A GraphViz statement describing generic attributes for a category of items.
+%
+% @arg Kind The category of items for to the attributes apply.
+%      Possible values: `edge`, `graph`, and `node`.
+% @arg Indent An integer indicating the number of tabs.
+% @arg GraphAttributes A list of name-value pairs.
+% @arg CategoryAttributes A list of name-value pairs.
+%
+% ```
+% attr_stmt = (graph / node / edge) attr_list
+% ```
+
+gv_generic_attributes_statement(_, _, []) --> !, "".
+gv_generic_attributes_statement(Kind, I, Attrs) -->
+  indent(I),
+  gv_kind(Kind), " ",
+  gv_attrs(Kind, Attrs),
+  "\n".
+
+%! gv_kind(+Kind:oneof([edge,graph,node]))// .
+
+gv_kind(edge) --> "edge".
+gv_kind(graph) --> "graph".
+gv_kind(node) --> "node".
+
+
+
+%! gv_node_statement(+Indent:nonneg, +Vertex:compound)// is det.
+% A GraphViz statement describing a vertex (GraphViz calls vertices 'nodes').
+
+gv_node_statement(I, vertex(Id,Attrs)) -->
+  indent(I),
+  gv_node_id(Id),
+  gv_attrs(node, Attrs),
+  "\n".
+
+
+
+%! gv_ranked_node_collection(+Indent:nonneg, Rank:???)// is det.
+
+gv_ranked_node_collection(I, Rank) -->
+  indent(I),
+  bracketed(curly, gv_ranked_node_collection0(I, Rank)).
+
+gv_ranked_node_collection0(I, rank(Rank_V_Term,Content_V_Terms)) -->
+  "\n",
+  
+  % The rank attribute.
+  {NewI is I + 1},
+  indent(NewI),
+  gv_attr(subgraph, rank=same),
+  ";\n",
+  
+  % Vertice statements.
+  '*'(
+    gv_node_statement(NewI),
+    [Rank_V_Term|Content_V_Terms],
+    []
+  ),
+  
+  % We want to indent the closing curly brace.
+  indent(I),
+  "\n".
+
+
+
+
+
+% HELPERS %
+
+%! gv_attrs(
+%!   +Kind:oneof([edge,graph,node]),
+%!   +Attributes:list(compound)
+%! )// is det.
+
+gv_attrs(Kind, L) -->
+  bracketed(square, '*'(gv_attr(Kind), L, [])).
 
 %! gv_attr(
 %!   +Context:oneof([edge,graph,node]),
@@ -53,105 +185,7 @@ gv_attr(Context, N=V) -->
 
 
 
-%! gv_attrs(
-%!   +Kind:oneof([edge,graph,node]),
-%!   +Attributes:list(compound)
-%! )// is det.
-
-gv_attrs(Kind, L) -->
-  bracketed(square, '*'(gv_attr, L, [])).
-
-
-
-%! gv_compass_pt(+Direction:oneof(['_',c,e,n,ne,nw,s,se,sw,w]))// .
-% ```
-% compass_pt : (n | ne | e | se | s | sw | w | nw | c | _)
-% ```
-
-gv_compass_pt('_') --> "_".
-gv_compass_pt(c) --> "c".
-gv_compass_pt(e) --> "e".
-gv_compass_pt(n) --> "n".
-gv_compass_pt(ne) --> "ne".
-gv_compass_pt(nw) --> "nw".
-gv_compass_pt(s) --> "s".
-gv_compass_pt(se) --> "se".
-gv_compass_pt(sw) --> "sw".
-gv_compass_pt(w) --> "w".
-
-
-
-%! gv_edge_operator(+Directed:boolean)// .
-% The binary edge operator between two vertices.
-% The operator that is used depends on whether the graph is directed or
-% undirected.
-%
-% @arg Directed Whether an edge is directed (operator `->`) or
-%               undirected (operator `--`).
-
-gv_edge_operator(false) --> !, "--".
-gv_edge_operator(true) --> "->".
-
-
-
-%! gv_edge_statement(
-%!   +Indent:nonneg,
-%!   +Directed:boolean,
-%!   +EdgeTerm:compound
-%! )// is det.
-% A GraphViz statement describing an edge.
-%
-% @arg Indent The indentation level at which the edge statement is written.
-% @arg Directed Whether the graph is directed or not.
-% @arg GraphAttributes The attributes of the graph. Some of these attributes
-%      may be used in the edge statement (e.g., the colorscheme).
-% @arg EdgeTerm A compound term in the GIFormat, representing an edge.
-%
-% @tbd Instead of gv_node_id//1 we could have a gv_subgraph//1
-%      at the from and/or to location.
-% @tbd Add support for multiple, consecutive occurrences of gv_edge_rhs//2.
-
-gv_edge_statement(I, Directed, edge(FromId,ToId,EAttrs)) -->
-  indent(I),
-
-  gv_node_id(FromId), " ",
-  gv_edge_operator(Directed), " ",
-  gv_node_id(ToId), " ",
-  
-  % We want `colorscheme/1` from the edges and
-  % `directionality/1` from the graph.
-  gv_attrs(edge, EAttrs),
-  "\n".
-
-
-
-%! gv_generic_attributes_statement(
-%!   +Kind:oneof([edge,graph,node]),
-%!   +Indent:integer,
-%!   +CategoryAttributes:list(nvpair)
-%! )//
-% A GraphViz statement describing generic attributes for a category of items.
-%
-% @arg Kind The category of items for to the attributes apply.
-%      Possible values: `edge`, `graph`, and `node`.
-% @arg Indent An integer indicating the number of tabs.
-% @arg GraphAttributes A list of name-value pairs.
-% @arg CategoryAttributes A list of name-value pairs.
-%
-% ```
-% attr_stmt = (graph / node / edge) attr_list
-% ```
-
-gv_generic_attributes_statement(_, _, []) --> [], !.
-gv_generic_attributes_statement(Kind, I, KindAttrs) -->
-  indent(I),
-  gv_kind(Kind), " ",
-  gv_attrs(Kind, KindAttrs),
-  "\n".
-
-
-
-%! gv_id(?Atom:compound)// is det.
+%! gv_id(+Id:compound)// is det.
 % Parse a GraphViz identifier.
 % There are 4 variants:
 %   1. Any string of alphabetic (`[a-zA-Z'200-'377]`) characters,
@@ -193,19 +227,23 @@ gv_id(Atom) -->
   % GraphViz keyword.
   {\+ gv_keyword([H|T])}.
 
+%! gv_id_first(+First:code)// is det.
+% Generates the first character of a GraphViz identifier.
+
 gv_id_first(X) -->
   ascii_letter(X).
 gv_id_first(X) -->
   underscore(X).
 
-gv_id_rest([]) --> [].
+%! gv_id_rest(+NonFirst:code)// is det.
+% Generates a non-first character of a GraphViz identifier.
+
+gv_id_rest([]) --> !, "".
 gv_id_rest([H|T]) -->
   (   ascii_alpha_numeric(H)
   ;   underscore(H)
   ),
   gv_id_rest(T).
-
-
 
 %! gv_keyword(+Codes:list(code)) is semidet.
 % Succeeds if the given codes for a GraphViz reserved keyword.
@@ -228,14 +266,6 @@ gv_keyword --> "subgraph".
 
 
 
-%! gv_kind(+Kind:oneof([edge,graph,node]))// .
-
-gv_kind(edge) --> "edge".
-gv_kind(graph) --> "graph".
-gv_kind(node) --> "node".
-
-
-
 %! gv_node_id(+NodeId:compound)// .
 % GraphViz node identifiers can be of the following two types:
 %   1. A GraphViz identifier, see gv_id//1.
@@ -252,16 +282,7 @@ gv_node_id(Id) -->
 
 
 
-%! gv_node_statement(+Indent:nonneg, +VertexTerm:compound)// .
-% A GraphViz statement describing a vertex (GraphViz calls vertices 'nodes').
-
-gv_node_statement(I, vertex(Id,VAttrs)) -->
-  indent(I),
-  gv_node_id(Id),
-  gv_attrs(node, VAttrs),
-  "\n".
-
-
+%! gv_port// is det.
 
 gv_port -->
   gv_port_location,
@@ -285,34 +306,25 @@ gv_port_location -->
   ":",
   gv_id(_).
 gv_port_location -->
-  ":(",
-  gv_id(_),
-  ",",
-  gv_id(_)
-  ")".
+  ":",
+  bracketed((
+    gv_id(_),
+    ",",
+    gv_id(_)
+  )).
 
+%! gv_compass_pt(+Direction:oneof(['_',c,e,n,ne,nw,s,se,sw,w]))// .
+% ```
+% compass_pt : (n | ne | e | se | s | sw | w | nw | c | _)
+% ```
 
-
-gv_ranked_node_collection(I, Rank) -->
-  indent(I),
-  bracketed(curly, gv_ranked_node_collection0(I, Rank)).
-
-gv_ranked_node_collection0(I, rank(Rank_V_Term,Content_V_Terms)) -->
-  "\n",
-  
-  % The rank attribute.
-  {NewI is I + 1},
-  indent(NewI),
-  gv_attr(subgraph, rank=same),
-  ";\n",
-  
-  % Vertice statements.
-  '*'(
-    gv_node_statement(NewI),
-    [Rank_V_Term|Content_V_Terms],
-    []
-  ),
-  
-  % We want to indent the closing curly brace.
-  indent(I),
-  "\n".
+gv_compass_pt('_') --> "_".
+gv_compass_pt(c) --> "c".
+gv_compass_pt(e) --> "e".
+gv_compass_pt(n) --> "n".
+gv_compass_pt(ne) --> "ne".
+gv_compass_pt(nw) --> "nw".
+gv_compass_pt(s) --> "s".
+gv_compass_pt(se) --> "se".
+gv_compass_pt(sw) --> "sw".
+gv_compass_pt(w) --> "w".

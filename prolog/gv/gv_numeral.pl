@@ -14,7 +14,6 @@
 :- use_module(library(dcg/dcg_abnf)).
 :- use_module(library(dcg/dcg_abnf_common)).
 :- use_module(library(dcg/dcg_ascii)).
-:- use_module(library(dcg/dcg_cardinal)).
 :- use_module(library(math/math_ext)).
 :- use_module(library(math/positional)).
 :- use_module(library(math/radconv)).

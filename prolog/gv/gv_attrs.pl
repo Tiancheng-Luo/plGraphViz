@@ -24,12 +24,7 @@
 :- use_module(library(persistency_ext)).
 :- use_module(library(xpath)).
 
-:- use_module(library(gv/gv_attr_type), [gv_attr_type/1]).
-
-:- dynamic(user:prolog_file_type/2).
-:- multifile(user:prolog_file_type/2).
-
-user:prolog_file_type(log, logging).
+:- use_module(library(gv/gv_attr_type), [gv_attr_type//1]).
 
 %! gv_attr(
 %!   ?Name:atom,
@@ -127,32 +122,30 @@ assert_gv_attr_row([Name,UsedBy1,Types1,Default1,Minimum,Notes]):-
 % Downloads the table describing GraphViz attributes from `graphviz.org`.
 
 gv_attrs_download:-
-  verbose_process(
-    'Updating GraphViz attributes table... ',
-    (
-      gv_attrs_uri(Uri),
-      html_download(Uri, Dom),
-      xpath(Dom, //table(@align=lower_case(center)), TableDom),
-      html_table(TableDom, _, Rows),
-      maplist(assert_gv_attr_row, Rows)
-    )
+  verbose_call(
+    'updating GraphViz attributes table',
+    gv_attrs_download0
   ).
+
+gv_attrs_download0:-
+  gv_attrs_uri(Uri),
+  html_download(Uri, Dom),
+  xpath_chk(Dom, //table(@align=lower_case(center)), TableDom),
+  html_table(TableDom, _, Rows),
+  maplist(assert_gv_attr_row, Rows).
 
 
 %! gv_attrs_file(-File:atom) is det.
 
 gv_attrs_file(File):-
-  absolute_file_name(gv_attrs, File, [access(write),file_type(logging)]).
+  absolute_file_name('gv_attrs.log', File, [access(write)]).
 
 
 %! gv_attrs_init is det.
 
 gv_attrs_init:-
   gv_attrs_file(File),
-  attach_persistent_db(File),
-  file_age(File, Age),
-  gv_attrs_update(Age).
-
+  init_persistent_db(File, gv_attrs_update).
 
 
 %! gv_attrs_update(+Age:float) is det.
@@ -186,12 +179,13 @@ translate_default(Default, Default).
 
 %! translate_type(-Types:list(atom))// is det.
 
-translate_type([]) --> !, [].
 translate_type([H|T]) -->
-  {gv_attr_type(H)},
-  atom(H),
+  gv_attr_type(H),
   whites,
   translate_type(T).
+translate_type([H]) -->
+  gv_attr_type(H).
+translate_type([]) --> "".
 
 
 

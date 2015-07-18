@@ -17,26 +17,16 @@
 */
 
 :- use_module(library(apply)).
+:- use_module(library(deb_ext)).
 :- use_module(library(dcg/basics)).
+:- use_module(library(dcg/dcg_abnf)).
+:- use_module(library(dcg/dcg_content)).
+:- use_module(library(file_ext)).
+:- use_module(library(http/html_download)).
+:- use_module(library(http/html_table)).
 :- use_module(library(lists)).
-:- use_module(library(persistency)).
+:- use_module(library(persistency_ext)).
 :- use_module(library(xpath)).
-
-:- use_module(plc(dcg/dcg_abnf)).
-:- use_module(plc(dcg/dcg_abnf_rules)).
-:- use_module(plc(dcg/dcg_atom)).
-:- use_module(plc(dcg/dcg_cardinal)).
-:- use_module(plc(dcg/dcg_content)).
-:- use_module(plc(generics/db_ext)).
-:- use_module(plc(generics/persistent_db_ext)).
-:- use_module(plc(generics/print_ext)).
-:- use_module(plc(io/file_ext)).
-:- use_module(plc(io/file_gnu)).
-
-:- use_module(plHtml(html)).
-:- use_module(plHtml(html_table)).
-
-:- db_add_novel(user:prolog_file_type(log, logging)).
 
 %! gv_color(?Colorscheme:oneof([svg,x11]), ?Color:atom) is nondet.
 
@@ -99,7 +89,7 @@ wc_weight(Float) -->
 
 gv_color_download:-
   verbose_call(
-    'Updating the GraphViz color table...',
+    'updating the GraphViz color table',
     (
       gv_color_uri(Uri),
       html_download(Uri, Dom),
@@ -121,18 +111,14 @@ assert_color_table(Colorscheme, TableDom):-
 %! gv_color_file(-File:atom) is det.
 
 gv_color_file(File):-
-  absolute_file_name(
-    data(gv_color),
-    File,
-    [access(write),file_type(logging)]
-  ).
+  absolute_file_name('gv_color.log', File, [access(write)]).
 
 
 %! gv_color_init is det.
 
 gv_color_init:-
   gv_color_file(File),
-  persistent_db_init(File, gv_color_update).
+  init_persistent_db(File, gv_color_update).
 
 
 %! gv_color_update(+Age:float) is det.

@@ -1,7 +1,7 @@
 :- module(
   gv_attr_type,
   [
-    gv_attr_type/1, % ?Type:atom
+    gv_attr_type//1, % ?Type:atom
     addDouble//1, % +Double:float
     addPoint//1, % +Point:compound
     arrowType//1, % +ArrowType:atom
@@ -62,38 +62,38 @@
 
 %! gv_attr_type(?Type:atom) is nondet.
 
-gv_attr_type(addDouble).
-gv_attr_type(addPoint).
-gv_attr_type(arrowType).
-gv_attr_type(bool).
-gv_attr_type(color).
-gv_attr_type(colorList).
-gv_attr_type(clusterMode).
-gv_attr_type(dirType).
-gv_attr_type(double).
-gv_attr_type(doubleList).
-gv_attr_type(escString).
-gv_attr_type(layerList).
-gv_attr_type(layerRange).
-gv_attr_type(lblString).
-gv_attr_type(int).
-gv_attr_type(outputMode).
-gv_attr_type(packMode).
-gv_attr_type(pagedir).
-gv_attr_type(point).
-gv_attr_type(pointList).
-gv_attr_type(portPos).
-gv_attr_type(quadType).
-gv_attr_type(rankType).
-gv_attr_type(rankdir).
-gv_attr_type(rect).
-gv_attr_type(shape).
-gv_attr_type(smoothType).
-gv_attr_type(splineType).
-gv_attr_type(startType).
-gv_attr_type(string).
-gv_attr_type(style).
-gv_attr_type(viewPort).
+gv_attr_type(addDouble) --> "addDouble".
+gv_attr_type(addPoint) --> "addPoint".
+gv_attr_type(arrowType) --> "arrowType".
+gv_attr_type(bool) --> "bool".
+gv_attr_type(color) --> "color".
+gv_attr_type(colorList) --> "colorList".
+gv_attr_type(clusterMode) --> "clusterMode".
+gv_attr_type(dirType) --> "dirType".
+gv_attr_type(double) --> "double".
+gv_attr_type(doubleList) --> "doubleList".
+gv_attr_type(escString) --> "escString".
+gv_attr_type(layerList) --> "layerList".
+gv_attr_type(layerRange) --> "layerRange".
+gv_attr_type(lblString) --> "lblString".
+gv_attr_type(int) --> "int".
+gv_attr_type(outputMode) --> "outputMode".
+gv_attr_type(packMode) --> "packMode".
+gv_attr_type(pagedir) --> "pagedir".
+gv_attr_type(point) --> "point".
+gv_attr_type(pointList) --> "pointList".
+gv_attr_type(portPos) --> "portPos".
+gv_attr_type(quadType) --> "quadType".
+gv_attr_type(rankType) --> "rankType".
+gv_attr_type(rankdir) --> "rankdir".
+gv_attr_type(rect) --> "rect".
+gv_attr_type(shape) --> "shape".
+gv_attr_type(smoothType) --> "smoothType".
+gv_attr_type(splineType) --> "splineType".
+gv_attr_type(startType) --> "startType".
+gv_attr_type(string) --> "string".
+gv_attr_type(style) --> "style".
+gv_attr_type(viewPort) --> "viewPort".
 
 
 

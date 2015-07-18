@@ -44,7 +44,7 @@ cell:   <TD> label </TD>
 */
 
 :- use_module(library(dcg/dcg_abnf)).
-:- use_module(library(dcg/dcg_bracket)).
+:- use_module(library(dcg/dcg_bracketed)).
 :- use_module(library(dcg/dcg_content)).
 :- use_module(library(http/html_dcg)).
 

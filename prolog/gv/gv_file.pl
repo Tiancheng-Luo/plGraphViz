@@ -13,8 +13,9 @@
 @version 2015/07
 */
 
+:- use_module(library(code_ext)).
 :- use_module(library(error)).
-:- use_module(library(gv/gv_dot)).
+:- use_module(library(gv/gv_graph)).
 :- use_module(library(option)).
 :- use_module(library(process)).
 
@@ -55,7 +56,7 @@ gv_export(ExportGraph, OutputFile, Options):-
   absolute_file_name(data(ThreadName), TmpFile, [access(write),file_type(dot)]),
   setup_call_cleanup(
     open(TmpFile, write, Write, [encoding(utf8)]),
-    put_codes(Write, Codes),
+    with_output_to(Write, put_codes(Codes)),
     close(Write)
   ),
   file_to_gv(TmpFile, OutputFile, Options).
@@ -88,7 +89,7 @@ file_to_gv(InputFile, OutputFile, Options):-
   % Run the GraphViz conversion command in the shell.
   format(atom(OutputTypeFlag), '-T~a', [OutputType]),
   format(atom(OutputFileFlag), '-o~a', [OutputFile]),
-  process_ext(
+  process_create(
     path(Method),
     [OutputTypeFlag,file(InputFile),OutputFileFlag],
     []

@@ -7,6 +7,13 @@
 
 /** <module> GraphViz graph
 
+Generates GraphViz graphs in the DOT format based on
+a Prolog representation of a graph.
+
+In GraphViz vertices are called 'nodes'.
+
+---
+
 @author Wouter Beek
 @version 2015/07
 */
@@ -14,6 +21,7 @@
 :- use_module(library(apply)).
 :- use_module(library(dcg/dcg_abnf)).
 :- use_module(library(dcg/dcg_content)).
+:- use_module(library(gv/gv_graph_comp)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
 
@@ -79,8 +87,9 @@ gv_graph(G1, I) -->
   gv_graph_type(Directed), " ",
   
   % Graph name.
-  (   {select_name(GName), GAttrs4, GAttrs5)}
-  ->  gv_id(GName), " ",
+  (   {select_option(name(GName), GAttrs4, GAttrs5)}
+  ->  gv_id(GName),
+      " "
   ;   {GAttrs5 = GAttrs4}
   ),
 
@@ -102,7 +111,7 @@ gv_graph(G1, I) -->
   % Only add a line_feed if some content was already written
   % and some content is about to be written.
   (   % Succeeds if no content was written.
-      {(GAttrs == [], SharedVAttrs == [], SharedEAttrs == [])}
+      {(GAttrs5 == [], SharedVAttrs == [], SharedEAttrs == [])}
   ->  ""
   ;   % Succeeds if no content is about to be written.
       {(NewVTerms == [], RankedVTerms == [])}
@@ -171,8 +180,8 @@ gv_ranked_node_collections(I, L) -->
 %! ) is det.
 
 add_default(L1, Opt, L2):-
-  Opt =.. [N,V],
-  Opt0 =.. [N,_],
+  Opt =.. [N,_Value],
+  Opt0 =.. [N,_FreshVar],
   (   option(Opt0, L1)
   ->  true
   ;   L2 = [Opt|L1]
