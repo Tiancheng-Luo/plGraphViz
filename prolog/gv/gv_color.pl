@@ -90,14 +90,16 @@ wc_weight(Float) -->
 gv_color_download:-
   verbose_call(
     'updating the GraphViz color table',
-    (
-      gv_color_uri(Uri),
-      html_download(Uri, Dom),
-      xpath(Dom, //table(1), TableDom1),
-      xpath(Dom, //table(2), TableDom2),
-      maplist(assert_color_table, [x11,svg], [TableDom1,TableDom2])
-    )
+    gv_color_download0
   ).
+
+gv_color_download0:-
+  gv_color_uri(Uri),
+  html_download(Uri, Dom),
+  xpath_chk(Dom, //table(1), TableDom1),
+  xpath_chk(Dom, //table(2), TableDom2),
+  maplist(assert_color_table, [x11,svg], [TableDom1,TableDom2]).
+
 
 assert_color_table(Colorscheme, TableDom):-
   html_table(TableDom, _, Rows),
