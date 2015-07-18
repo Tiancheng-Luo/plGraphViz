@@ -53,7 +53,7 @@ gv_export(ExportGraph, OutputFile, Options):-
   % Be thread-safe.
   thread_self(Id),
   atomic_list_concat([gv_file,Id], '_', ThreadName),
-  absolute_file_name(data(ThreadName), TmpFile, [access(write),file_type(dot)]),
+  absolute_file_name(ThreadName, TmpFile, [access(write),file_type(dot)]),
   setup_call_cleanup(
     open(TmpFile, write, Write, [encoding(utf8)]),
     with_output_to(Write, put_codes(Codes)),
@@ -69,20 +69,26 @@ gv_export(ExportGraph, OutputFile, Options):-
 % Converts a GraphViz DOT file to an image file, using a specific
 % visualization method.
 
-file_to_gv(InputFile, OutputFile, Options):-
-  option(output(dot), Options), !,
+file_to_gv(InputFile, OutputFile, Opts):-
+  var(OutputFile), !,
+  option(output(Ext), Opts, pdf),
+  file_name_extension(out, Ext, LocalName),
+  absolute_file_name(LocalName, OutputFile, Opts),
+  file_to_gv(InputFile, OutputFile, Opts).
+file_to_gv(InputFile, OutputFile, Opts):-
+  option(output(dot), Opts), !,
   (   var(OutputFile)
   ->  OutputFile = InputFile
   ;   rename_file(InputFile, OutputFile)
   ).
-file_to_gv(InputFile, OutputFile, Options):-
+file_to_gv(InputFile, OutputFile, Opts):-
   % Typecheck for `method` option.
-  option(method(Method), Options, dot),
+  option(method(Method), Opts, dot),
   findall(Method0, gv_method(Method0), Methods),
   must_be(oneof(Methods), Method),
 
   % Typecheck for `output` option.
-  option(output(OutputType), Options, pdf),
+  option(output(OutputType), Opts, pdf),
   findall(OutputType0, gv_output_type(OutputType0), OutputTypes),
   must_be(oneof(OutputTypes), OutputType),
 
