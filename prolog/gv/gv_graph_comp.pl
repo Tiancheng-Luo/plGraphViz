@@ -177,7 +177,8 @@ gv_attrs(Kind, L) -->
 % A single GraphViz attribute.
 % We assume that the attribute has already been validated.
 
-gv_attr(Context, N=V) -->
+gv_attr(Context, Attr) -->
+  {Attr =.. [N,V]},
   gv_id(N),
   "=",
   gv_attr_value(Context, N=V),
