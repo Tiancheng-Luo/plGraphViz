@@ -109,7 +109,7 @@ gv_generic_attributes_statement(Kind, I, Attrs) -->
   indent(I),
   gv_kind(Kind), " ",
   gv_attrs(Kind, Attrs),
-  "\n".
+  "\n", !.
 
 %! gv_kind(+Kind:oneof([edge,graph,node]))// .
 
