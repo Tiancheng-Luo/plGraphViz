@@ -22,8 +22,8 @@
 :- use_module(library(dcg/dcg_abnf)).
 :- use_module(library(dcg/dcg_content)).
 :- use_module(library(file_ext)).
-:- use_module(library(http/html_download)).
-:- use_module(library(http/html_table)).
+:- use_module(library(html/html_download)).
+:- use_module(library(html/html_table)).
 :- use_module(library(lists)).
 :- use_module(library(persistency_ext)).
 :- use_module(library(xpath)).
