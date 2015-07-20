@@ -18,13 +18,12 @@
 :- use_module(library(dcg/dcg_call)).
 :- use_module(library(dcg/dcg_phrase)).
 :- use_module(library(file_ext)).
+:- use_module(library(gv/gv_attr_type), [gv_attr_type//1]).
 :- use_module(library(html/html_download)).
 :- use_module(library(html/html_table)).
 :- use_module(library(lists)).
 :- use_module(library(persistency_ext)).
 :- use_module(library(xpath)).
-
-:- use_module(library(gv/gv_attr_type), [gv_attr_type//1]).
 
 %! gv_attr(
 %!   ?Name:atom,
