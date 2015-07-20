@@ -193,11 +193,11 @@ edge_term(Vs, E, edge(FromId,ToId,EAttrs), Opts):-
 
   merge_options(
     [
-      arrowhead=EArrowhead,
-      color=EColor,
-      label=ELabel,
-      penwidth=EPenwidth,
-      style=EStyle
+      arrowhead(EArrowhead),
+      color(EColor),
+      label(ELabel),
+      penwidth(EPenwidth),
+      style(EStyle)
     ],
     EAttrs
   ).
@@ -244,12 +244,12 @@ graph_attributes(GAttrs, Opts):-
 
   merge_options(
     [
-      charset=Charset,
-      colorscheme=Colorscheme,
-      directed=Directed,
-      fontsize=Fontsize,
-      label=GLabel,
-      overlap=Overlap
+      charset(Charset),
+      colorscheme(Colorscheme),
+      directed(Directed),
+      fontsize(Fontsize),
+      label(GLabel),
+      overlap(Overlap)
     ],
     GAttrs
   ).
@@ -330,13 +330,13 @@ vertex_term(Vs, V, vertex(VId,VAttrs), Opts):-
 
   merge_options(
     [
-      color=VColor,
-      image=VImage,
-      label=VLabel,
-      peripheries=VPeripheries,
-      pos=VPosition,
-      shape=VShape,
-      'URL'=VUri
+      color(VColor),
+      image(VImage),
+      label(VLabel),
+      peripheries(VPeripheries),
+      pos(VPosition),
+      shape(VShape),
+      'URL'(VUri)
     ],
     VAttrs
   ).
