@@ -84,7 +84,8 @@ gv_graph(G1, I) -->
   
   % Directedness.
   {select_option(directed(Directed), GAttrs3, GAttrs4, true)},
-  gv_graph_type(Directed), " ",
+  gv_graph_type(Directed),
+  " ",
   
   % Graph name.
   (   {select_option(name(GName), GAttrs4, GAttrs5)}
@@ -183,7 +184,7 @@ add_default(L1, Opt, L2):-
   Opt =.. [N,_Value],
   Opt0 =.. [N,_FreshVar],
   (   option(Opt0, L1)
-  ->  true
+  ->  L2 = L1
   ;   L2 = [Opt|L1]
   ).
 
