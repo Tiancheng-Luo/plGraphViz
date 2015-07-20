@@ -25,7 +25,7 @@
 :- use_module(library(html/html_download)).
 :- use_module(library(html/html_table)).
 :- use_module(library(lists)).
-:- use_module(library(persistency_ext)).
+:- use_module(library(persistency)).
 :- use_module(library(xpath)).
 
 %! gv_color(?Colorscheme:oneof([svg,x11]), ?Color:atom) is nondet.
@@ -120,7 +120,13 @@ gv_color_file(File):-
 
 gv_color_init:-
   gv_color_file(File),
-  init_persistent_db(File, gv_color_update).
+  (   exists_file(File)
+  ->  true
+  ;   touch(File)
+  ),
+  db_attach(File, []),
+  file_age(File, Age),
+  gv_color_update(Age).
 
 
 %! gv_color_update(+Age:float) is det.

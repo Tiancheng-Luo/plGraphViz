@@ -22,7 +22,7 @@
 :- use_module(library(html/html_download)).
 :- use_module(library(html/html_table)).
 :- use_module(library(lists)).
-:- use_module(library(persistency_ext)).
+:- use_module(library(persistency)).
 :- use_module(library(xpath)).
 
 %! gv_attr(
@@ -144,7 +144,13 @@ gv_attrs_file(File):-
 
 gv_attrs_init:-
   gv_attrs_file(File),
-  init_persistent_db(File, gv_attrs_update).
+  (   exists_file(File)
+  ->  true
+  ;   touch(File)
+  ),
+  db_attach(File, []),
+  file_age(File, Age),
+  gv_attrs_update(Age).
 
 
 %! gv_attrs_update(+Age:float) is det.
