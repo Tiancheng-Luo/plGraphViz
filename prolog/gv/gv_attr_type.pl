@@ -213,9 +213,9 @@ escape_double_quotes, [92,34] -->
   [34], !,
   escape_double_quotes.
 escape_double_quotes, [X] -->
-  [X],
+  [X], !,
   escape_double_quotes.
-
+escape_double_quotes --> [].
 
 
 
