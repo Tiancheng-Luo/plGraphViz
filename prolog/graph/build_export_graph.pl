@@ -241,7 +241,8 @@ graph_attributes(GAttrs, Opts):-
   % Fontsize.
   option(graph_fontsize(Fontsize), Opts, 11.0),
   % Label.
-  option(graph_label(GLabel), Opts, ''),
+  % Defaults to the empty string.
+  option(graph_label(GLabel), Opts, '""'),
   % Overlap.
   option(graph_overlap(Overlap), Opts, false),
 
