@@ -20,10 +20,10 @@
 :- use_module(library(file_ext)).
 :- use_module(library(gv/gv_attr_type), [gv_attr_type//1]).
 :- use_module(library(html/html_download)).
-:- use_module(library(html/html_table)).
 :- use_module(library(lists)).
 :- use_module(library(persistency)).
 :- use_module(library(xpath)).
+:- use_module(library(xpath/xpath_table)).
 
 %! gv_attr(
 %!   ?Name:atom,
@@ -130,7 +130,7 @@ gv_attrs_download0:-
   gv_attrs_uri(Uri),
   html_download(Uri, Dom),
   xpath_chk(Dom, //table(@align=lower_case(center)), TableDom),
-  html_table(TableDom, _, Rows),
+  xpath_table(TableDom, _, Rows),
   maplist(assert_gv_attr_row, Rows).
 
 

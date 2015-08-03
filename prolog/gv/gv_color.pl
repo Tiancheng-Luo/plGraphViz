@@ -13,7 +13,7 @@
 @author Wouter Beek
 @tbd Color value `transparent` is only available in the output formats
      ps, svg, fig, vmrl, and the bitmap formats.
-@version 2014/06, 2014/10-2014/11, 2015/01, 2015/03
+@version 2015/08
 */
 
 :- use_module(library(apply)).
@@ -23,10 +23,10 @@
 :- use_module(library(dcg/dcg_content)).
 :- use_module(library(file_ext)).
 :- use_module(library(html/html_download)).
-:- use_module(library(html/html_table)).
 :- use_module(library(lists)).
 :- use_module(library(persistency)).
 :- use_module(library(xpath)).
+:- use_module(library(xpath/xpath_table)).
 
 %! gv_color(?Colorscheme:oneof([svg,x11]), ?Color:atom) is nondet.
 
@@ -102,7 +102,7 @@ gv_color_download0:-
 
 
 assert_color_table(Colorscheme, TableDom):-
-  html_table(TableDom, _, Rows),
+  xpath_table(TableDom, _, Rows),
   append(Rows, Cells),
   forall(
     member(Cell, Cells),

@@ -25,8 +25,13 @@
 user:prolog_file_type(dot, dot).
 user:prolog_file_type(pdf, pdf).
 
-:- predicate_options(gv_export/3, 3, [pass_to(file_to_gv/3, 3)]).
-:- predicate_options(file_to_gv/3, 3, [method(+atom),output(+atom)]).
+:- predicate_options(gv_export/3, 3, [
+     pass_to(file_to_gv/3, 3)
+   ]).
+:- predicate_options(file_to_gv/3, 3, [
+     method(+atom),
+     output(+atom)
+   ]).
 
 
 
