@@ -171,7 +171,10 @@ edge_term(Vs, E, edge(FromId,ToId,EAttrs), Opts):-
   % Id.
   (   option(edge_id(IdFunction), Opts)
   ->  call(IdFunction, E, FromId, ToId)
-  ;     E = edge(FromV,_,ToV),
+  ;     (   E = edge(FromV,_,ToV)
+        ->  true
+        ;   E = edge(FromV,ToV)
+        ),
         nth0chk(FromId, Vs, FromV),
         nth0chk(ToId, Vs, ToV)
   ),
