@@ -11,7 +11,7 @@
     gv_node_statement//2, % +Indent:nonneg
                           % +Vertex:compound
     gv_ranked_node_collection//2 % +Indent:nonneg
-				 % +Rank:???    
+                                 % +Rank
   ]
 ).
 
@@ -26,7 +26,7 @@ a_list = ID "=" ID [","] [a_list]
 
 @author Wouter Beek
 @see http://www.graphviz.org/content/dot-language
-@version 2015/07
+@version 2015/07-2015/08
 */
 
 :- use_module(library(apply)).
@@ -68,7 +68,7 @@ gv_edge_statement(I, Dir, edge(From,To,Attrs)) -->
   gv_node_id(From), " ",
   gv_edge_operator(Dir), " ",
   gv_node_id(To), " ",
-  
+
   % We want `colorscheme/1` from the edges and
   % `directionality/1` from the graph.
   gv_attrs(edge, Attrs),
@@ -130,7 +130,7 @@ gv_node_statement(I, vertex(Id,Attrs)) -->
 
 
 
-%! gv_ranked_node_collection(+Indent:nonneg, Rank:???)// is det.
+%! gv_ranked_node_collection(+Indent:nonneg, Rank)// is det.
 
 gv_ranked_node_collection(I, Rank) -->
   indent(I),
@@ -138,20 +138,20 @@ gv_ranked_node_collection(I, Rank) -->
 
 gv_ranked_node_collection0(I, rank(Rank_V_Term,Content_V_Terms)) -->
   "\n",
-  
+
   % The rank attribute.
   {NewI is I + 1},
   indent(NewI),
   gv_attr(subgraph, rank=same),
   ";\n",
-  
+
   % Vertice statements.
   '*'(
     gv_node_statement(NewI),
     [Rank_V_Term|Content_V_Terms],
     []
   ),
-  
+
   % We want to indent the closing curly brace.
   indent(I),
   "\n".

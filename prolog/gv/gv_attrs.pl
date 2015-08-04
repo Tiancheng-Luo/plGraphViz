@@ -9,7 +9,7 @@
 /** <module> GraphViz attributes
 
 @author Wouter Beek
-@version 2015/07
+@version 2015/07-2015/08
 */
 
 :- use_module(library(apply)).
@@ -17,10 +17,10 @@
 :- use_module(library(dcg/basics)).
 :- use_module(library(dcg/dcg_call)).
 :- use_module(library(dcg/dcg_phrase)).
-:- use_module(library(file_ext)).
 :- use_module(library(gv/gv_attr_type), [gv_attr_type//1]).
-:- use_module(library(html/html_download)).
+:- use_module(library(http/http_download)).
 :- use_module(library(lists)).
+:- use_module(library(os/file_ext)).
 :- use_module(library(persistency)).
 :- use_module(library(xpath)).
 :- use_module(library(xpath/xpath_table)).
