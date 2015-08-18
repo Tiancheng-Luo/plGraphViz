@@ -160,13 +160,13 @@ gv_graph(G1, I) -->
   "}\n".
 
 gv_edge_statements(I, Dir, L) -->
-  '*'(gv_edge_statement(I, Dir), L, []), !.
+  *(gv_edge_statement(I, Dir), L, []), !.
 
 gv_node_statements(I, L) -->
-  '*'(gv_node_statement(I), L, []), !.
+  *(gv_node_statement(I), L, []), !.
 
 gv_ranked_node_collections(I, L) -->
-  '*'(gv_ranked_node_collection(I), L, []), !.
+  *(gv_ranked_node_collection(I), L, []), !.
 
 
 

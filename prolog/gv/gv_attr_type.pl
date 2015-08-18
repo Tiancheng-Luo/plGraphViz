@@ -198,7 +198,7 @@ double(N) -->
 %! doubleList(+Doubles:list(float))// .
 
 doubleList(L) -->
-  '*'(double, L, [separator(colon)]).
+  *(double, L, [separator(colon)]).
 
 
 
@@ -292,7 +292,7 @@ input_changeable(true) --> "!".
 %! pointList(+Points:list(compound))// .
 
 pointList(Points) -->
-  '*'(point, Points, []).
+  *(point, Points, []).
 
 
 

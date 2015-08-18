@@ -1,5 +1,3 @@
-:- ensure_loaded(debug).
-
 %/graph
   :- use_module(library(graph/build_export_graph)).
 %/gv

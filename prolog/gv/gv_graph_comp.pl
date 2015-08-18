@@ -146,7 +146,7 @@ gv_ranked_node_collection0(I, rank(Rank_V_Term,Content_V_Terms)) -->
   ";\n",
 
   % Vertice statements.
-  '*'(
+  *(
     gv_node_statement(NewI),
     [Rank_V_Term|Content_V_Terms],
     []
@@ -168,7 +168,7 @@ gv_ranked_node_collection0(I, rank(Rank_V_Term,Content_V_Terms)) -->
 %! )// is det.
 
 gv_attrs(Kind, L) -->
-  bracketed(square, '*'(gv_attr(Kind), L, [])).
+  bracketed(square, *(gv_attr(Kind), L, [])).
 
 %! gv_attr(
 %!   +Context:oneof([edge,graph,node]),
