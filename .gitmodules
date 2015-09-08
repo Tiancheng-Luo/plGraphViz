@@ -1,9 +1,0 @@
-[submodule "Prolog-Library-Collection"]
-	path = Prolog-Library-Collection
-	url = https://github.com/wouterbeek/Prolog-Library-Collection.git
-[submodule "plHtml"]
-	path = plHtml
-	url = https://github.com/wouterbeek/plHtml.git
-[submodule "plUri"]
-	path = plUri
-	url = https://github.com/wouterbeek/plUri.git

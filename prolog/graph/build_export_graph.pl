@@ -1,6 +1,8 @@
 :- module(
   build_export_graph,
   [
+    build_export_graph/2, % +Graph:compound
+                          % -ExportGraph:compound
     build_export_graph/3 % +Graph:compound
                          % -ExportGraph:compound
                          % +Options:list(compound)
@@ -49,7 +51,7 @@ Vertex coordinates:
 ---
 
 @author Wouter Beek
-@version 2015/07
+@version 2015/07, 2015/09
 */
 
 :- use_module(library(apply)).
@@ -109,6 +111,11 @@ is_meta(vertex_uri).
 
 
 
+
+%! build_export_graph(+Graph:compound, -ExportGraph:compound) is det.
+
+build_export_graph(G, ExportG):-
+  build_export_graph(G, ExportG, []).
 
 %! build_export_graph(
 %!   +Graph:compound,
