@@ -88,9 +88,9 @@ wc_weight(Float) -->
 %! gv_color_download is det.
 
 gv_color_download:-
-  verbose_call(
-    'updating the GraphViz color table',
-    gv_color_download0
+  verbose(
+    gv_color_download0,
+    'updating the GraphViz color table'
   ).
 
 gv_color_download0:-

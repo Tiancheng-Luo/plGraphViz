@@ -121,9 +121,9 @@ assert_gv_attr_row([Name,UsedBy1,Types1,Default1,Minimum,Notes]):-
 % Downloads the table describing GraphViz attributes from `graphviz.org`.
 
 gv_attrs_download:-
-  verbose_call(
-    'updating GraphViz attributes table',
+  verbose(
     gv_attrs_download0
+    "updating GraphViz attributes table",
   ).
 
 gv_attrs_download0:-
