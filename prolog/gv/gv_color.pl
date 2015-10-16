@@ -13,16 +13,17 @@
 @author Wouter Beek
 @tbd Color value `transparent` is only available in the output formats
      ps, svg, fig, vmrl, and the bitmap formats.
-@version 2015/08
+@version 2015/08, 2015/10
 */
 
 :- use_module(library(apply)).
-:- use_module(library(deb_ext)).
+:- use_module(library(debug_ext)).
 :- use_module(library(dcg/basics)).
 :- use_module(library(dcg/dcg_abnf)).
 :- use_module(library(dcg/dcg_content)).
 :- use_module(library(http/http_download)).
 :- use_module(library(lists)).
+:- use_module(library(msg_ext)).
 :- use_module(library(os/file_ext)).
 :- use_module(library(persistency)).
 :- use_module(library(xpath)).

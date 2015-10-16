@@ -9,17 +9,18 @@
 /** <module> GraphViz attributes
 
 @author Wouter Beek
-@version 2015/07-2015/08
+@version 2015/07-2015/08, 2015/10
 */
 
 :- use_module(library(apply)).
-:- use_module(library(deb_ext)).
+:- use_module(library(debug_ext)).
 :- use_module(library(dcg/basics)).
 :- use_module(library(dcg/dcg_call)).
 :- use_module(library(dcg/dcg_phrase)).
 :- use_module(library(gv/gv_attr_type), [gv_attr_type//1]).
 :- use_module(library(http/http_download)).
 :- use_module(library(lists)).
+:- use_module(library(msg_ext)).
 :- use_module(library(os/file_ext)).
 :- use_module(library(persistency)).
 :- use_module(library(xpath)).
@@ -35,15 +36,15 @@
 %! ) is nondet.
 
 :- persistent(
-  gv_attr(
-    name:atom,
-    used_by:list(oneof([cluster,edge,graph,node,subgraph])),
-    types:list(atom),
-    default,
-    minimum,
-    notes:atom
-  )
-).
+     gv_attr(
+       name:atom,
+       used_by:list(oneof([cluster,edge,graph,node,subgraph])),
+       types:list(atom),
+       default,
+       minimum,
+       notes:atom
+     )
+   ).
 
 :- initialization(gv_attrs_init).
 
@@ -122,8 +123,8 @@ assert_gv_attr_row([Name,UsedBy1,Types1,Default1,Minimum,Notes]):-
 
 gv_attrs_download:-
   verbose(
-    gv_attrs_download0
-    "updating GraphViz attributes table",
+    gv_attrs_download0,
+    "updating GraphViz attributes table"
   ).
 
 gv_attrs_download0:-
