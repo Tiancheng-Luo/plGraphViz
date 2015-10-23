@@ -202,11 +202,14 @@ doubleList(L) -->
 
 
 
-%! escString(+String:atom)// .
+%! escString(+String:or([atom,string]))// .
 % @tbd Support for context-dependent replacements.
 
 escString(S1) -->
-  {atom_phrase(escape_double_quotes, S1, S2)},
+  {(  string(S1)
+  ->  string_phrase(escape_double_quotes, S1, S2)
+  ;   atom_phrase(escape_double_quotes, S1, S2)
+  )},
   quoted(atom(S2)).
 
 escape_double_quotes, [92,34] -->

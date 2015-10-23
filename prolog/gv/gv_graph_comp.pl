@@ -26,7 +26,7 @@ a_list = ID "=" ID [","] [a_list]
 
 @author Wouter Beek
 @see http://www.graphviz.org/content/dot-language
-@version 2015/07-2015/08
+@version 2015/07-2015/08, 2015/10
 */
 
 :- use_module(library(apply)).
@@ -38,6 +38,7 @@ a_list = ID "=" ID [","] [a_list]
 :- use_module(library(dcg/dcg_quoted)).
 :- use_module(library(gv/gv_attrs)).
 :- use_module(library(gv/gv_html)).
+:- use_module(library(error)).
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
 
@@ -82,8 +83,9 @@ gv_edge_statement(I, Dir, edge(From,To,Attrs)) -->
 % @arg Directed Whether an edge is directed (operator `->`) or
 %      undirected (operator `--`).
 
-gv_edge_operator(false) --> !, "--".
-gv_edge_operator(true) --> "->".
+gv_edge_operator(Dir) -->
+  {must_be(boolean, Dir)},
+  ({Dir == false} -> "--" ; {Dir == true} -> "->").
 
 
 
@@ -113,9 +115,9 @@ gv_generic_attributes_statement(Kind, I, Attrs) -->
 
 %! gv_kind(+Kind:oneof([edge,graph,node]))// .
 
-gv_kind(edge) --> "edge".
-gv_kind(graph) --> "graph".
-gv_kind(node) --> "node".
+gv_kind(Kind) -->
+  {must_be(oneof([edge,graph,node]), Kind)},
+  atom(Kind).
 
 
 
@@ -142,8 +144,8 @@ gv_ranked_node_collection0(I, rank(Rank_V_Term,Content_V_Terms)) -->
   % The rank attribute.
   {NewI is I + 1},
   indent(NewI),
-  gv_attr(subgraph, rank=same),
-  ";\n",
+  gv_attr(subgraph, rank(same)),
+  "\n",
 
   % Vertice statements.
   *(
@@ -170,10 +172,8 @@ gv_ranked_node_collection0(I, rank(Rank_V_Term,Content_V_Terms)) -->
 gv_attrs(Kind, L) -->
   bracketed(square, *(gv_attr(Kind), L, [])).
 
-%! gv_attr(
-%!   +Context:oneof([edge,graph,node]),
-%!   +Attribute:nvpair
-%! )// is det.
+
+%! gv_attr(+Context:oneof([edge,graph,node]), +Attribute:compound)// is det.
 % A single GraphViz attribute.
 % We assume that the attribute has already been validated.
 
@@ -276,10 +276,12 @@ gv_keyword --> "subgraph".
 %      inside GraphViz node identifiers.
 
 gv_node_id(Id) -->
-  gv_id(Id).
+  gv_id(Id), !.
 %gv_node_id(_) -->
 %  gv_id(_),
 %  gv_port.
+gv_node_id(Id) -->
+  {type_error(gv_node_id, Id)}.
 
 
 
