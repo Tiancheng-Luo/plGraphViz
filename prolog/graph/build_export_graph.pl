@@ -1,9 +1,9 @@
 :- module(
   build_export_graph,
   [
-    build_export_graph/2, % +Graph:compound
+    build_export_graph/2, % +Graph
                           % -ExportGraph:compound
-    build_export_graph/3 % +Graph:compound
+    build_export_graph/3 % +Graph
                          % -ExportGraph:compound
                          % +Options:list(compound)
   ]
@@ -18,13 +18,13 @@ Support for building GIF representations.
 ## Graph
 
 ```prolog
-graph(Vs:ordset(compound),Ranks,Es:compound,Attributes:list(nvpair))
+graph(Vs:ordset(compound),Ranks,Es:compound,Attributes:list(compound))
 ```
 
 ### Edge
 
 ```prolog
-edge(FromVertexId,ToVertexId,Attributes:list(nvpair))
+edge(FromVertexId,ToVertexId,Attributes:list(compound))
 ```
 
 ### Rank
@@ -36,7 +36,7 @@ rank(RankVertex:compound,ContentVertices:ordset(compound))
 ### Vertex
 
 ```prolog
-vertex(Id,Attributes:list(nvpair))
+vertex(Id,Attributes:list(compound))
 ```
 
 # Property functions
@@ -51,10 +51,12 @@ Vertex coordinates:
 ---
 
 @author Wouter Beek
-@version 2015/07, 2015/09
+@version 2015/07, 2015/09-2015/10
 */
 
 :- use_module(library(apply)).
+:- use_module(library(graph/s/s_graph)).
+:- use_module(library(lambda)).
 :- use_module(library(list_ext)).
 :- use_module(library(option_ext)).
 :- use_module(library(ordsets)).
@@ -112,34 +114,32 @@ is_meta(vertex_uri).
 
 
 
-%! build_export_graph(+Graph:compound, -ExportGraph:compound) is det.
+%! build_export_graph(+Graph, -ExportGraph:compound) is det.
+% Wrapper around build_export_graph/3.
 
 build_export_graph(G, ExportG):-
   build_export_graph(G, ExportG, []).
 
+
 %! build_export_graph(
-%!   +Graph:compound,
+%!   +Graph,
 %!   -ExportGraph:compound,
 %!   +Options:list(compound)
 %! ) is det.
+% Graph is either:
+%   * a coumpound term `graph(Vs,Es)`, or
+%   * an unlabeled graph as defined by `library(ugraph)`.
 
-build_export_graph(graph(Vs,Es), graph(VTerms,ETerms,GAttrs), Opts1):-
+build_export_graph(G, graph(VTerms,ETerms,GAttrs), Opts1):-
+  graph_components(G, Vs, Es),
   meta_options(is_meta, Opts1, Opts2),
-
-  % V terms.
-  maplist(vertex_term0(Vs, Opts2), Vs, VTerms),
-
-  % Edge terms.
-  maplist(edge_term0(Vs, Opts2), Es, ETerms),
-
-  % Graph attributes.
+  maplist(\V^VTerm^vertex_term(Vs, V, VTerm, Opts2), Vs, VTerms),
+  maplist(\E^ETerm^edge_term(Vs, E, ETerm, Opts2), Es, ETerms),
   graph_attributes(GAttrs, Opts2).
 
-vertex_term0(Vs, Opts, V, VTerm):-
-  vertex_term(Vs, V, VTerm, Opts).
-
-edge_term0(Vs, Opts, E, ETerm):-
-  edge_term(Vs, E, ETerm, Opts).
+graph_components(graph(Vs,Es), Vs, Es):- !.
+graph_components(G, Vs, Es):-
+  s_graph_components(G, Vs, Es).
 
 
 
@@ -178,12 +178,9 @@ edge_term(Vs, E, edge(FromId,ToId,EAttrs), Opts):-
   % Id.
   (   option(edge_id(IdFunction), Opts)
   ->  call(IdFunction, E, FromId, ToId)
-  ;     (   E = edge(FromV,_,ToV)
-        ->  true
-        ;   E = edge(FromV,ToV)
-        ),
-        nth0chk(FromId, Vs, FromV),
-        nth0chk(ToId, Vs, ToV)
+  ;   edge_components(E, FromV, ToV),
+      nth0chk(FromId, Vs, FromV),
+      nth0chk(ToId, Vs, ToV)
   ),
   
   % Label.
@@ -215,7 +212,7 @@ edge_term(Vs, E, edge(FromId,ToId,EAttrs), Opts):-
 
 
 %! graph_attributes(
-%!   -GraphAttributes:list(nvpair),
+%!   -GraphAttributes:list(compound),
 %!   +Options:list(compound)
 %! ) is det.
 % The following options are supported:
@@ -358,7 +355,15 @@ vertex_term(Vs, V, vertex(VId,VAttrs), Opts):-
 
 % HELPERS %
 
-%! merge_options(+FromOptions:list(nvpair), -ToOptions:list(nvpair)) is det.
+%! edge_components(+Edge:compound, -FromV, -ToV) is det.
+
+edge_components(edge(FromV,_,ToV), FromV, ToV):- !.
+edge_components(edge(FromV,ToV), FromV, ToV):- !.
+edge_components(FromV-ToV, FromV, ToV):- !.
+
+
+
+%! merge_options(+FromOptions:list(compound), -ToOptions:list(compound)) is det.
 
 merge_options([], []).
 % Skip uninstantiated values.
