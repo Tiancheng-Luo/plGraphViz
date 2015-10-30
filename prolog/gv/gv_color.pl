@@ -7,6 +7,7 @@
     colorList//1 % +Pairs:list(pair(compound,float))
   ]
 ).
+:- ensure_loaded(library('gv/gv_color.data')).
 
 /** <module> GraphViz color
 
@@ -17,23 +18,11 @@
 */
 
 :- use_module(library(apply)).
-:- use_module(library(debug_ext)).
 :- use_module(library(dcg/basics)).
 :- use_module(library(dcg/dcg_abnf)).
 :- use_module(library(dcg/dcg_content)).
-:- use_module(library(http/http_download)).
 :- use_module(library(lists)).
-:- use_module(library(msg_ext)).
 :- use_module(library(os/file_ext)).
-:- use_module(library(persistency)).
-:- use_module(library(xpath)).
-:- use_module(library(xpath/xpath_table)).
-
-%! gv_color(?Colorscheme:oneof([svg,x11]), ?Color:atom) is nondet.
-
-:- persistent(gv_color(colorscheme:oneof([svg,x11]),color:atom)).
-
-:- initialization(gv_color_init).
 
 
 
@@ -79,69 +68,3 @@ wc(Color-Float) -->
 wc_weight(Float) -->
   ";",
   float(Float).
-
-
-
-
-
-% INITIALIZATION %
-
-%! gv_color_download is det.
-
-gv_color_download:-
-  verbose(
-    gv_color_download0,
-    'updating the GraphViz color table'
-  ).
-
-gv_color_download0:-
-  gv_color_uri(Uri),
-  html_download(Uri, Dom),
-  xpath_chk(Dom, //table(1), TableDom1),
-  xpath_chk(Dom, //table(2), TableDom2),
-  maplist(assert_color_table, [x11,svg], [TableDom1,TableDom2]).
-
-
-assert_color_table(Colorscheme, TableDom):-
-  xpath_table(TableDom, _, Rows),
-  append(Rows, Cells),
-  forall(
-    member(Cell, Cells),
-    assert_gv_color(Colorscheme, Cell)
-  ).
-
-
-%! gv_color_file(-File:atom) is det.
-
-gv_color_file(File):-
-  absolute_file_name('gv_color.log', File, [access(write)]).
-
-
-%! gv_color_init is det.
-
-gv_color_init:-
-  gv_color_file(File),
-  (   exists_file(File)
-  ->  true
-  ;   touch(File)
-  ),
-  db_attach(File, []),
-  file_age(File, Age),
-  gv_color_update(Age).
-
-
-%! gv_color_update(+Age:float) is det.
-
-% The persistent store is still fresh.
-gv_color_update(Age):-
-  once(gv_color(_, _)),
-  Age < 8640000, !.
-% The persistent store has become stale, so refresh it.
-gv_color_update(_):-
-  retractall_gv_color(_, _),
-  gv_color_download.
-
-
-%! gv_color_uri(-Url:url) is det.
-
-gv_color_uri('http://www.graphviz.org/doc/info/colors.html').
