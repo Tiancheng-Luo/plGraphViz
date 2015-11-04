@@ -17,7 +17,8 @@
 :- use_module(library(error)).
 :- use_module(library(gv/gv_graph)).
 :- use_module(library(option)).
-:- use_module(library(process)).
+:- use_module(library(os/external_program)).
+:- use_module(library(os/process_ext)).
 :- use_module(library(string_ext)).
 
 :- predicate_options(gv_export/3, 3, [
@@ -27,6 +28,11 @@
      method(+oneof([circo,dot,fdp,neato,osage,sfdp,twopi])),
      output(+atom)
    ]).
+
+:- dynamic(user:module_uses/2).
+:- multifile(user:module_uses/2).
+
+user:module_uses(gv_file, program(dot)).
 
 
 
@@ -94,10 +100,9 @@ file_to_gv(InputFile, OutputFile, Opts):-
   % Run the GraphViz conversion command in the shell.
   format(atom(OutputTypeFlag), "-T~a", [OutputType]),
   format(atom(OutputFileFlag), "-o~a", [OutputFile]),
-  process_create(
+  run_process(
     path(Method),
-    [OutputTypeFlag,file(InputFile),OutputFileFlag],
-    []
+    [OutputTypeFlag,file(InputFile),OutputFileFlag]
   ).
 
 
