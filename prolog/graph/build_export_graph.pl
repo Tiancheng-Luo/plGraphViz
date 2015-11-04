@@ -30,7 +30,7 @@ edge(FromVertexId,ToVertexId,Attributes:list(compound))
 ### Rank
 
 ```prolog
-rank(RankVertex:compound,ContentVertices:ordset(compound))
+RankVertex:compound-ContentVertices:ordset(compound)
 ```
 
 ### Vertex
@@ -51,7 +51,7 @@ Vertex coordinates:
 ---
 
 @author Wouter Beek
-@version 2015/07, 2015/09-2015/10
+@version 2015/07, 2015/09-2015/11
 */
 
 :- use_module(library(apply)).
@@ -60,6 +60,7 @@ Vertex coordinates:
 :- use_module(library(list_ext)).
 :- use_module(library(option_ext)).
 :- use_module(library(ordsets)).
+:- use_module(library(pairs)).
 
 :- predicate_options(build_export_graph/4, 4, [
      pass_to(edge_term/3, 3),
@@ -89,6 +90,7 @@ Vertex coordinates:
      vertex_label(+callable),
      vertex_peripheries(+callable),
      vertex_position(+callable),
+     vertex_rank(+callable),
      vertex_shape(+callable),
      vertex_uri(+callable)
    ]).
@@ -107,6 +109,7 @@ is_meta(vertex_image).
 is_meta(vertex_label).
 is_meta(vertex_peripheries).
 is_meta(vertex_position).
+is_meta(vertex_rank).
 is_meta(vertex_shape).
 is_meta(vertex_uri).
 
@@ -129,17 +132,37 @@ build_export_graph(G, ExportG):-
 % Graph is either:
 %   * a coumpound term `graph(Vs,Es)`, or
 %   * an unlabeled graph as defined by `library(ugraph)`.
+%
+% The following options are supported:
+%   * `vertex_rank(:RankFunction)`
+%     Assigns a non-negative integer to each vertex.
+%     No default.
 
-build_export_graph(G, graph(VTerms,ETerms,GAttrs), Opts1):-
+build_export_graph(G, graph(VTerms2,VRanks,ETerms,GAttrs), Opts1):-
   graph_components(G, Vs, Es),
   meta_options(is_meta, Opts1, Opts2),
-  maplist(\V^VTerm^vertex_term(Vs, V, VTerm, Opts2), Vs, VTerms),
+  maplist(\V^VTerm^vertex_term(Vs, V, VTerm, Opts2), Vs, VTerms1),
+  build_export_ranks(Vs, VTerms1, VRanks, VTerms2, Opts2),
   maplist(\E^ETerm^edge_term(Vs, E, ETerm, Opts2), Es, ETerms),
   graph_attributes(GAttrs, Opts2).
 
 graph_components(graph(Vs,Es), Vs, Es):- !.
 graph_components(G, Vs, Es):-
   s_graph_components(G, Vs, Es).
+
+build_export_ranks(Vs, VTerms, VRanks, [], Opts):-
+  option(vertex_rank(VRank_2), Opts), !,
+  maplist(VRank_2, Vs, Ranks),
+  pairs_keys_values(Pairs, Ranks, VTerms),
+  group_pairs_by_key(Pairs, GroupedPairs),
+  build_export_rank_terms(GroupedPairs, VRanks).
+build_export_ranks(_, VTerms, [], VTerms, _).
+
+build_export_rank_terms([N-VTerms|T1], [vertex(Id,[label(Lbl)])-VTerms|T2]):- !,
+  format(atom(Id), 'r~d', [N]),
+  atom_number(Lbl, N),
+  build_export_rank_terms(T1, T2).
+build_export_rank_terms([], []).
 
 
 

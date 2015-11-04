@@ -52,7 +52,7 @@ In GraphViz vertices are called 'nodes'.
 %
 % `RankedVertexTerms` is a list of compound terms of the following form:
 % ```prolog
-% rank(RankNode,ContentNodes)
+% RankVertex-ContentVertices
 % ```
 %
 % @tbd Add support for subgraphs (arbitrary nesting).

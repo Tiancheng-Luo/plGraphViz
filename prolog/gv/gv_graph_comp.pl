@@ -22,18 +22,15 @@ attr_list = "[" [a_list] "]" [attr_list]
 a_list = ID "=" ID [","] [a_list]
 ```
 
----
-
 @author Wouter Beek
 @see http://www.graphviz.org/content/dot-language
-@version 2015/07-2015/08, 2015/10
+@version 2015/07-2015/08, 2015/10-2015/11
 */
 
 :- use_module(library(apply)).
 :- use_module(library(dcg/basics)).
 :- use_module(library(dcg/dcg_abnf)).
 :- use_module(library(dcg/dcg_ascii)).
-:- use_module(library(dcg/dcg_bracketed)).
 :- use_module(library(dcg/dcg_content)).
 :- use_module(library(dcg/dcg_quoted)).
 :- use_module(library(gv/gv_attrs)).
@@ -113,6 +110,8 @@ gv_generic_attributes_statement(Kind, I, Attrs) -->
   gv_attrs(Kind, Attrs),
   "\n", !.
 
+
+
 %! gv_kind(+Kind:oneof([edge,graph,node]))// .
 
 gv_kind(Kind) -->
@@ -132,14 +131,11 @@ gv_node_statement(I, vertex(Id,Attrs)) -->
 
 
 
-%! gv_ranked_node_collection(+Indent:nonneg, Rank)// is det.
+%! gv_ranked_node_collection(+Indent:nonneg, Rank:pair)// is det.
 
-gv_ranked_node_collection(I, Rank) -->
+gv_ranked_node_collection(I, RankVTerm-VTerms) -->
   indent(I),
-  bracketed(curly, gv_ranked_node_collection0(I, Rank)).
-
-gv_ranked_node_collection0(I, rank(Rank_V_Term,Content_V_Terms)) -->
-  "\n",
+  "{\n",
 
   % The rank attribute.
   {NewI is I + 1},
@@ -148,15 +144,11 @@ gv_ranked_node_collection0(I, rank(Rank_V_Term,Content_V_Terms)) -->
   "\n",
 
   % Vertice statements.
-  *(
-    gv_node_statement(NewI),
-    [Rank_V_Term|Content_V_Terms],
-    []
-  ),
+  *(gv_node_statement(NewI), [RankVTerm|VTerms], []),
 
   % We want to indent the closing curly brace.
   indent(I),
-  "\n".
+  "\n}".
 
 
 
@@ -170,7 +162,7 @@ gv_ranked_node_collection0(I, rank(Rank_V_Term,Content_V_Terms)) -->
 %! )// is det.
 
 gv_attrs(Kind, L) -->
-  bracketed(square, *(gv_attr(Kind), L, [])).
+  "[", *(gv_attr(Kind), L, []), "]".
 
 
 %! gv_attr(+Context:oneof([edge,graph,node]), +Attribute:compound)// is det.
@@ -179,10 +171,7 @@ gv_attrs(Kind, L) -->
 
 gv_attr(Context, Attr) -->
   {Attr =.. [N,V]},
-  gv_id(N),
-  "=",
-  gv_attr_value(Context, N=V),
-  ";".
+  gv_id(N), "=", gv_attr_value(Context, N=V), ";".
 
 
 
@@ -213,7 +202,7 @@ gv_id(html_like_label(Content)) --> !,
 % Double-quoted strings.
 % The quotes are already part of the given atom.
 gv_id(double_quoted_string(Atom)) --> !,
-  quoted(atom(Atom)).
+  "\"", atom(Atom), "\"".
 % Numerals.
 gv_id(N) -->
   {number(N)}, !,
@@ -228,6 +217,7 @@ gv_id(Atom) -->
   % GraphViz keyword.
   {\+ gv_keyword([H|T])}.
 
+
 %! gv_id_first(+First:code)// is det.
 % Generates the first character of a GraphViz identifier.
 
@@ -236,15 +226,16 @@ gv_id_first(X) -->
 gv_id_first(X) -->
   underscore(X).
 
+
 %! gv_id_rest(+NonFirst:code)// is det.
 % Generates a non-first character of a GraphViz identifier.
 
 gv_id_rest([]) --> !, "".
 gv_id_rest([H|T]) -->
-  (   ascii_alpha_numeric(H)
-  ;   underscore(H)
-  ),
+  (ascii_alpha_numeric(H) ; underscore(H)),
   gv_id_rest(T).
+
+
 
 %! gv_keyword(+Codes:list(code)) is semidet.
 % Succeeds if the given codes for a GraphViz reserved keyword.
@@ -253,6 +244,7 @@ gv_keyword(Cs):-
   % Obviously, the keywords do not occur on the difference list input.
   % So we must use phrase/[2,3].
   phrase(gv_keyword, Cs).
+
 
 %! gv_keyword// .
 % GraphViz has reserved keywords that cannot be used as identifiers.
@@ -289,32 +281,22 @@ gv_node_id(Id) -->
 
 gv_port -->
   gv_port_location,
-  (   gv_port_angle
-  ;   ""
-  ).
+  (gv_port_angle ; "").
 gv_port -->
   gv_port_angle,
-  (   gv_port_location
-  ;   ""
-  ).
+  (gv_port_location ; "").
 gv_port -->
-  ":",
-  gv_compass_pt(_).
+  ":", gv_compass_pt(_).
 
 gv_port_angle -->
-  "@",
-  gv_id(_).
+  "@", gv_id(_).
 
 gv_port_location -->
-  ":",
-  gv_id(_).
+  ":", gv_id(_).
 gv_port_location -->
-  ":",
-  bracketed((
-    gv_id(_),
-    ",",
-    gv_id(_)
-  )).
+  ":[", gv_id(_), ",", gv_id(_), "]".
+
+
 
 %! gv_compass_pt(+Direction:oneof(['_',c,e,n,ne,nw,s,se,sw,w]))// .
 % ```
