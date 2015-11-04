@@ -1,3 +1,5 @@
+%/fca
+  :- use_module(library(fca/fca_export)).
 %/graph
   :- use_module(library(graph/build_export_graph)).
 %/gv

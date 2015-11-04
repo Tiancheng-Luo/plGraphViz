@@ -1,8 +1,10 @@
 :- module(
   gv_file,
   [
+    gv_export/2, % +ExportGraph:compound
+                 % ?File:atom
     gv_export/3 % +ExportGraph:compound
-                % +OutputFile:atom
+                % ?File:atom
                 % +Options:list(nvpair)
   ]
 ).
@@ -10,7 +12,7 @@
 /** <module> GraphViz file
 
 @author Wouter Beek
-@version 2015/07, 2015/10
+@version 2015/07, 2015/10-2015/11
 */
 
 :- use_module(library(code_ext)).
@@ -38,7 +40,14 @@ user:module_uses(gv_file, program(dot)).
 
 
 
-%! gv_export(+ExportGraph:compound, +File:atom, +Options:list(compound)) is det.
+%! gv_export(+ExportGraph:compound, ?File:atom) is det.
+% Wrapper around gv_export/3 with default options.
+
+gv_export(ExportG, File):-
+  gv_export(ExportG, File, []).
+
+
+%! gv_export(+ExportGraph:compound, ?File:atom, +Options:list(compound)) is det.
 % Returns a file containing a GraphViz visualization of the given graph.
 %
 % The following options are supported:
@@ -68,7 +77,7 @@ gv_export(ExportG, File, Opts):-
 
 %! file_to_gv(
 %!   +InputFile:atom,
-%!   +OutputFile:atom,
+%!   ?OutputFile:atom,
 %!   +Options:list(compound)
 %! ) is det.
 % Converts a GraphViz DOT file to an image file, using a specific
@@ -101,7 +110,7 @@ file_to_gv(InputFile, OutputFile, Opts):-
   format(atom(OutputTypeFlag), "-T~a", [OutputType]),
   format(atom(OutputFileFlag), "-o~a", [OutputFile]),
   run_process(
-    path(Method),
+    Method,
     [OutputTypeFlag,file(InputFile),OutputFileFlag]
   ).
 
