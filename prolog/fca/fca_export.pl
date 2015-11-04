@@ -27,6 +27,7 @@
 :- use_module(library(graph/build_export_graph)).
 :- use_module(library(gv/gv_file)).
 :- use_module(library(option)).
+:- use_module(library(ordsets)).
 
 :- predicate_options(fca_export/3, 3, [
      pass_to(build_export_graph/3, 3),
@@ -47,11 +48,15 @@ fca_export(Context, File):-
 %! fca_export(+Context:compound, ?File:atom, +Options:list(compound)) is det.
 
 fca_export(Context, File, Opts1):-
-  fca_lattice(Context, Lattice),
+  fca_lattice(Context, Lattice1),
+  maplist(remove_reflexive_edge, Lattice1, Lattice2),
   option(concept_label(VLabel_2), Opts1, fca_export:fca_label_concept),
   merge_options([vertex_label(VLabel_2)], Opts1, Opts2),
-  build_export_graph(Lattice, ExportG, Opts2),
+  build_export_graph(Lattice2, ExportG, Opts2),
   gv_export(ExportG, File, Opts1).
+
+remove_reflexive_edge(M-Ns1, M-Ns2):-
+  ord_del_element(Ns1, M, Ns2).
 
 
 
