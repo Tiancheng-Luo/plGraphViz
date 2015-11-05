@@ -49,30 +49,15 @@ fca_export(Context, File):-
 %! fca_export(+Context:compound, ?File:atom, +Options:list(compound)) is det.
 
 fca_export(Context, File, Opts1):-
-  fca_lattice(Context, Lattice1),
-  %minimize(Lattice1, Lattice2),
-  Lattice2 = Lattice1,
+  fca_hasse(Context, Hasse),
   option(concept_label(VLabel_2), Opts1, fca_export:fca_label_concept),
   merge_options(
     [vertex_label(VLabel_2),vertex_rank(fca:concept_cardinality)],
     Opts1,
     Opts2
   ),
-  build_export_graph(Lattice2, ExportG, Opts2),
+  build_export_graph(Hasse, ExportG, Opts2),
   gv_export(ExportG, File, Opts1).
-
-minimize(G1, G2):-
-  s_vertices(G1, Vs),
-  aggregate_all(
-    set(X-Y),
-    (
-      s_edge(G1, X-Y),
-      maplist(concept_cardinality, [X,Y], [CX,CY]),
-      CX < CY
-    ),
-    Es
-  ),
-  s_graph_components(G2, Vs, Es).
 
 
 
