@@ -17,6 +17,7 @@
 
 :- use_module(library(dcg/dcg_collection)).
 :- use_module(library(dcg/dcg_phrase)).
+:- use_module(library(dcg/dcg_pl)).
 :- use_module(library(fca/fca)).
 :- use_module(library(graph/build_export_graph)).
 :- use_module(library(graph/s/s_graph)).
@@ -24,8 +25,8 @@
 :- use_module(library(option)).
 :- use_module(library(ordsets)).
 
-:- meta_predicate(concept_label(+,1,+,-)).
-:- meta_predicate(concept_label(+,1,+,?,?)).
+:- meta_predicate(concept_label(+,1,1,+,-)).
+:- meta_predicate(concept_label(+,1,1,+,?,?)).
 :- meta_predicate(fca_export(+,?,:)).
 
 :- predicate_options(fca_export/3, 3, [
@@ -34,6 +35,7 @@
      pass_to(gv_export/3, 3)
    ]).
 
+is_meta(attribute_label).
 is_meta(object_label).
 
 
@@ -49,17 +51,27 @@ fca_export(Context, File):-
 
 %! fca_export(+Context:compound, ?File:atom, :Options:list(compound)) is det.
 % The following optios are supported:
+%   * attribute_label(+callable)
+%     DCG writing the labels for individual attributes.
+%     Default is pl_term//1.
 %   * concept_label(+oneof([attributes,both,objects]))
+%     Determines which components of the concepts are displayed
+%     in the export graph.
+%     Default is `both`.
+%   * object_label(+callable)
+%     DCG writing the labels for individual objects.
+%     Default is pl_term//1.
 
 fca_export(Context, File, Opts1):-
   fca_hasse(Context, Hasse),
   
   meta_options(is_meta, Opts1, Opts2),
+  option(attribute_label(ALbl_1), Opts2, pl_term),
   option(concept_label(Mode), Opts2, both),
-  option(object_label(Object_1), Opts2, =),
+  option(object_label(OLbl_1), Opts2, pl_term),
   merge_options(
     [
-      vertex_label(fca_export:concept_label(Mode, Object_1)),
+      vertex_label(fca_export:concept_label(Mode, OLbl_1, ALbl_1)),
       vertex_rank(fca:concept_cardinality)
     ],
     Opts2,
@@ -73,20 +85,29 @@ fca_export(Context, File, Opts1):-
 
 %! concept_label(
 %!   +Mode:oneof([attributes,both,objects]),
-%!   :Object_1,
+%!   :ObjectLabel_1,
+%!   :AttributeLabel_1,
 %!   +Concept:compound,
 %!   -Label:atom
 %! ) is det.
 
-concept_label(Mode, Object_1, Concept, Lbl):-
-  string_phrase(concept_label(Mode, Object_1, Concept), Lbl).
+concept_label(Mode, OLbl_1, ALbl_1, Concept, Lbl):-
+  string_phrase(concept_label(Mode, OLbl_1, ALbl_1, Concept), Lbl).
 
-concept_label(attributes, _, concept(_,As)) -->
-  set(As).
-concept_label(both, Object_1, Concept) -->
+
+%! concept_label(
+%!   +Mode:oneof([attributes,both,objects]),
+%!   :ObjectLabel_1,
+%!   :AttributeLabel_1,
+%!   +Concept:compound
+%! )// is det.
+
+concept_label(attributes, _, ALbl_1, concept(_,As)) -->
+  set(ALbl_1, As).
+concept_label(both, OLbl_1, ALbl_1, Concept) -->
   pair(
-    concept_label(objects, Object_1, Concept),
-    concept_label(attributes, Object_1, Concept)
+    concept_label(objects, OLbl_1, ALbl_1, Concept),
+    concept_label(attributes, OLbl_1, ALbl_1, Concept)
   ).
-concept_label(objects, Object_1, concept(Os,_)) -->
-  set(Object_1, Os).
+concept_label(objects, OLbl_1, _, concept(Os,_)) -->
+  set(OLbl_1, Os).
