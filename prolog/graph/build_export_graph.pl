@@ -158,11 +158,13 @@ build_export_ranks(Vs, VTerms, VRanks, [], Opts):-
   build_export_rank_terms(GroupedPairs, VRanks).
 build_export_ranks(_, VTerms, [], VTerms, _).
 
-build_export_rank_terms([N-VTerms|T1], [vertex(Id,[label(Lbl)])-VTerms|T2]):- !,
-  format(atom(Id), 'r~d', [N]),
-  atom_number(Lbl, N),
+build_export_rank_terms([N-VTerms|T1], [RankTerm-VTerms|T2]):- !,
+  build_export_rank_term(N, RankTerm),
   build_export_rank_terms(T1, T2).
 build_export_rank_terms([], []).
+
+build_export_rank_term(N, vertex(Id,[label(""),shape(none)])):-
+  format(atom(Id), "r~d", [N]).
 
 
 

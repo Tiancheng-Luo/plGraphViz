@@ -3,15 +3,9 @@
   [
     fca_export/2, % +Context:compound
                   % ?File:atom
-    fca_export/3, % +Context:compound
-                  % ?File:atom
-                  % +Options:list(compound)
-    fca_label_attributes/2, % +Concept:compound
-                            % -Label:atom
-    fca_label_concept/2, % +Concept:compound
-                         % -Label:atom
-    fca_label_objects/2 % +Concept:compound
-                        % -Label:atom
+    fca_export/3 % +Context:compound
+                 % ?File:atom
+                 % :Options:list(compound)
   ]
 ).
 
@@ -30,10 +24,17 @@
 :- use_module(library(option)).
 :- use_module(library(ordsets)).
 
+:- meta_predicate(concept_label(+,1,+,-)).
+:- meta_predicate(concept_label(+,1,+,?,?)).
+:- meta_predicate(fca_export(+,?,:)).
+
 :- predicate_options(fca_export/3, 3, [
-     pass_to(build_export_graph/3, 3),
+     concept_label(+oneof([attributes,both,objects])),
+     object_label(+callable),
      pass_to(gv_export/3, 3)
    ]).
+
+is_meta(object_label).
 
 
 
@@ -46,48 +47,46 @@ fca_export(Context, File):-
   fca_export(Context, File, []).
 
 
-%! fca_export(+Context:compound, ?File:atom, +Options:list(compound)) is det.
+%! fca_export(+Context:compound, ?File:atom, :Options:list(compound)) is det.
+% The following optios are supported:
+%   * concept_label(+oneof([attributes,both,objects]))
 
 fca_export(Context, File, Opts1):-
   fca_hasse(Context, Hasse),
-  option(concept_label(VLabel_2), Opts1, fca_export:fca_label_concept),
+  
+  meta_options(is_meta, Opts1, Opts2),
+  option(concept_label(Mode), Opts2, both),
+  option(object_label(Object_1), Opts2, =),
   merge_options(
-    [vertex_label(VLabel_2),vertex_rank(fca:concept_cardinality)],
-    Opts1,
-    Opts2
+    [
+      vertex_label(fca_export:concept_label(Mode, Object_1)),
+      vertex_rank(fca:concept_cardinality)
+    ],
+    Opts2,
+    Opts3
   ),
-  build_export_graph(Hasse, ExportG, Opts2),
-  gv_export(ExportG, File, Opts1).
+  build_export_graph(Hasse, ExportG, Opts3),
+
+  gv_export(ExportG, File, Opts2).
 
 
 
-%! fca_label_attributes(+Concept:compound, -Label:atom) is det.
-% Writes a concept label displaying its attributes.
+%! concept_label(
+%!   +Mode:oneof([attributes,both,objects]),
+%!   :Object_1,
+%!   +Concept:compound,
+%!   -Label:atom
+%! ) is det.
 
-fca_label_attributes(Concept, Lbl):-
-  string_phrase(dcg_attributes(Concept), Lbl).
+concept_label(Mode, Object_1, Concept, Lbl):-
+  string_phrase(concept_label(Mode, Object_1, Concept), Lbl).
 
-dcg_attributes(concept(_,As)) -->
+concept_label(attributes, _, concept(_,As)) -->
   set(As).
-
-
-
-%! fca_label_attributes(+Concept:compound, -Label:atom) is det.
-% Writes a concept label display both its attributes and objects.
-
-fca_label_concept(Concept, Lbl):-
-  string_phrase(dcg_concept(Concept), Lbl).
-
-dcg_concept(Concept) -->
-  pair(dcg_objects(Concept), dcg_attributes(Concept)).
-
-
-
-%! fca_label_objects(+Concept:compound, -Label:atom) is det.
-% Writes a concept label displaying its object.
-
-fca_label_objects(Concept, Lbl):-
-  string_phrase(dcg_objects(Concept), Lbl).
-
-dcg_objects(concept(Os,_)) -->
-  set(Os).
+concept_label(both, Object_1, Concept) -->
+  pair(
+    concept_label(objects, Object_1, Concept),
+    concept_label(attributes, Object_1, Concept)
+  ).
+concept_label(objects, Object_1, concept(Os,_)) -->
+  set(Object_1, Os).
