@@ -76,7 +76,7 @@ gv_graph(G1, I) -->
 
   % The first statement in the GraphViz output.
   % States that this file represents a graph according to the GraphViz format.
-  indent(I),
+  tab(I),
   
   % Strictness.
   {select_option(strict(Strict), GAttrs2, GAttrs3, false)},
@@ -156,7 +156,7 @@ gv_graph(G1, I) -->
   % Note that we do not include a line_feed here.
 
   % We want to indent the closing curly brace.
-  indent(I),
+  tab(I),
   "}\n".
 
 gv_edge_statements(I, Dir, L) -->

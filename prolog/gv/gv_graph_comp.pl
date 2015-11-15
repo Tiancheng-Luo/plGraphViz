@@ -61,7 +61,7 @@ a_list = ID "=" ID [","] [a_list]
 % @tbd Add support for multiple, consecutive occurrences of gv_edge_rhs//2.
 
 gv_edge_statement(I, Dir, edge(From,To,Attrs)) -->
-  indent(I),
+  tab(I),
 
   gv_node_id(From), " ",
   gv_edge_operator(Dir), " ",
@@ -105,7 +105,7 @@ gv_edge_operator(Dir) -->
 
 gv_generic_attributes_statement(_, _, []) --> !, "".
 gv_generic_attributes_statement(Kind, I, Attrs) -->
-  indent(I),
+  tab(I),
   gv_kind(Kind), " ",
   gv_attrs(Kind, Attrs),
   "\n", !.
@@ -124,7 +124,7 @@ gv_kind(Kind) -->
 % A GraphViz statement describing a vertex (GraphViz calls vertices 'nodes').
 
 gv_node_statement(I, vertex(Id,Attrs)) -->
-  indent(I),
+  tab(I),
   gv_node_id(Id),
   gv_attrs(node, Attrs),
   "\n".
@@ -134,12 +134,12 @@ gv_node_statement(I, vertex(Id,Attrs)) -->
 %! gv_ranked_node_collection(+Indent:nonneg, Rank:pair)// is det.
 
 gv_ranked_node_collection(I, RankVTerm-VTerms) -->
-  indent(I),
+  tab(I),
   "{\n",
 
   % The rank attribute.
   {NewI is I + 1},
-  indent(NewI),
+  tab(NewI),
   gv_attr(subgraph, rank(same)),
   "\n",
 
@@ -147,7 +147,7 @@ gv_ranked_node_collection(I, RankVTerm-VTerms) -->
   *(gv_node_statement(NewI), [RankVTerm|VTerms], []),
 
   % We want to indent the closing curly brace.
-  indent(I),
+  tab(I),
   "\n}".
 
 
