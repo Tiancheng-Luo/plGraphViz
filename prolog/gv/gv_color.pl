@@ -19,7 +19,6 @@
 
 :- use_module(library(apply)).
 :- use_module(library(dcg/basics)).
-:- use_module(library(dcg/dcg_abnf)).
 :- use_module(library(dcg/dcg_content)).
 :- use_module(library(lists)).
 :- use_module(library(os/file_ext)).
@@ -36,7 +35,7 @@
 
 color(rgb(Red,Green,Blue)) --> !,
   "#",
-  '#'(3, hex_color, [Red,Green,Blue], []).
+  '#'(3, hex_color, [Red,Green,Blue]).
 color(rgbs(Red,Green,Blue,Alpha)) --> !,
   color(rgb(Red,Green,Blue)),
   hex_color(Alpha).

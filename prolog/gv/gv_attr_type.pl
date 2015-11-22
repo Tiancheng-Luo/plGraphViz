@@ -46,14 +46,11 @@
 /** <module> GraphViz attribute types
 
 @author Wouter Beek
-@version 2015/07
+@version 2015/07, 2015/11
 */
 
 :- use_module(library(dcg/basics), except([string//1])).
-:- use_module(library(dcg/dcg_abnf)).
-:- use_module(library(dcg/dcg_ascii)).
 :- use_module(library(dcg/dcg_phrase)).
-:- use_module(library(dcg/dcg_quoted)).
 :- use_module(library(gv/gv_html)).
 
 
@@ -62,47 +59,45 @@
 
 %! gv_attr_type(?Type:atom) is nondet.
 
-gv_attr_type(addDouble) --> "addDouble".
-gv_attr_type(addPoint) --> "addPoint".
-gv_attr_type(arrowType) --> "arrowType".
-gv_attr_type(bool) --> "bool".
-gv_attr_type(color) --> "color".
-gv_attr_type(colorList) --> "colorList".
+gv_attr_type(addDouble)   --> "addDouble".
+gv_attr_type(addPoint)    --> "addPoint".
+gv_attr_type(arrowType)   --> "arrowType".
+gv_attr_type(bool)        --> "bool".
+gv_attr_type(color)       --> "color".
+gv_attr_type(colorList)   --> "colorList".
 gv_attr_type(clusterMode) --> "clusterMode".
-gv_attr_type(dirType) --> "dirType".
-gv_attr_type(double) --> "double".
-gv_attr_type(doubleList) --> "doubleList".
-gv_attr_type(escString) --> "escString".
-gv_attr_type(layerList) --> "layerList".
-gv_attr_type(layerRange) --> "layerRange".
-gv_attr_type(lblString) --> "lblString".
-gv_attr_type(int) --> "int".
-gv_attr_type(outputMode) --> "outputMode".
-gv_attr_type(packMode) --> "packMode".
-gv_attr_type(pagedir) --> "pagedir".
-gv_attr_type(point) --> "point".
-gv_attr_type(pointList) --> "pointList".
-gv_attr_type(portPos) --> "portPos".
-gv_attr_type(quadType) --> "quadType".
-gv_attr_type(rankType) --> "rankType".
-gv_attr_type(rankdir) --> "rankdir".
-gv_attr_type(rect) --> "rect".
-gv_attr_type(shape) --> "shape".
-gv_attr_type(smoothType) --> "smoothType".
-gv_attr_type(splineType) --> "splineType".
-gv_attr_type(startType) --> "startType".
-gv_attr_type(string) --> "string".
-gv_attr_type(style) --> "style".
-gv_attr_type(viewPort) --> "viewPort".
+gv_attr_type(dirType)     --> "dirType".
+gv_attr_type(double)      --> "double".
+gv_attr_type(doubleList)  --> "doubleList".
+gv_attr_type(escString)   --> "escString".
+gv_attr_type(layerList)   --> "layerList".
+gv_attr_type(layerRange)  --> "layerRange".
+gv_attr_type(lblString)   --> "lblString".
+gv_attr_type(int)         --> "int".
+gv_attr_type(outputMode)  --> "outputMode".
+gv_attr_type(packMode)    --> "packMode".
+gv_attr_type(pagedir)     --> "pagedir".
+gv_attr_type(point)       --> "point".
+gv_attr_type(pointList)   --> "pointList".
+gv_attr_type(portPos)     --> "portPos".
+gv_attr_type(quadType)    --> "quadType".
+gv_attr_type(rankType)    --> "rankType".
+gv_attr_type(rankdir)     --> "rankdir".
+gv_attr_type(rect)        --> "rect".
+gv_attr_type(shape)       --> "shape".
+gv_attr_type(smoothType)  --> "smoothType".
+gv_attr_type(splineType)  --> "splineType".
+gv_attr_type(startType)   --> "startType".
+gv_attr_type(string)      --> "string".
+gv_attr_type(style)       --> "style".
+gv_attr_type(viewPort)    --> "viewPort".
 
 
 
 %! addDouble(+Float:float)// .
 % An *addDouble* is represented by a Prolog float.
 
-addDouble(N) -->
-  ("+" ; ""),
-  float(N).
+addDouble(N) --> ("+", ! ; ""), float(N).
 
 
 
@@ -110,47 +105,38 @@ addDouble(N) -->
 % An *addPoint* is represented by a compound of the following form:
 % `point(X:float,Y:float,InputOnly:boolean)`.
 
-addPoint(Point) -->
-  ("+" ; ""),
-  point(Point).
+addPoint(Point) --> ("+", ! ; ""), point(Point).
 
 
 
 %! arrowType(+ArrowType:atom)// .
 
-arrowType(V) -->
-  {arrowType(V)},
-  atom(V).
+arrowType(V) --> primitive_shape(V).
+arrowType(V) --> derived(V).
+arrowType(V) --> backwards_compatible(V).
 
-arrowType(V):-
-  primitive_shape(V).
-arrowType(V):-
-  derived(V).
-arrowType(V):-
-  backwards_compatible(V).
+primitive_shape(box)     --> "box".
+primitive_shape(crow)    --> "crow".
+primitive_shape(circle)  --> "circle".
+primitive_shape(diamond) --> "diamond".
+primitive_shape(dot)     --> "dot".
+primitive_shape(inv)     --> "inv".
+primitive_shape(none)    --> "none".
+primitive_shape(normal)  --> "normal".
+primitive_shape(tee)     --> "tee".
+primitive_shape(vee)     --> "vee".
 
-primitive_shape(box).
-primitive_shape(crow).
-primitive_shape(circle).
-primitive_shape(diamond).
-primitive_shape(dot).
-primitive_shape(inv).
-primitive_shape(none).
-primitive_shape(normal).
-primitive_shape(tee).
-primitive_shape(vee).
+derived(odot)     --> "odot".
+derived(invdot)   --> "invdot".
+derived(invodot)  --> "invodot".
+derived(obox)     --> "obox".
+derived(odiamond) --> "odiamond".
 
-derived(odot).
-derived(invdot).
-derived(invodot).
-derived(obox).
-derived(odiamond).
-
-backwards_compatible(ediamond).
-backwards_compatible(empty).
-backwards_compatible(halfopen).
-backwards_compatible(invempty).
-backwards_compatible(open).
+backwards_compatible(ediamond) --> "ediamond".
+backwards_compatible(empty)    --> "empty".
+backwards_compatible(halfopen) --> "halfopen".
+backwards_compatible(invempty) --> "invempty".
+backwards_compatible(open)     --> "open".
 
 
 
@@ -158,47 +144,37 @@ backwards_compatible(open).
 
 bool(false) --> "false".
 bool(false) --> "no".
-bool(true) --> "true".
-bool(true) --> "yes".
+bool(true)  --> "true".
+bool(true)  --> "yes".
 
 
 
 %! clusterMode(+ClusterMode:atom)// .
 
-clusterMode(V) -->
-  {clusterMode(V)},
-  atom(V).
-
-clusterMode(global).
-clusterMode(local).
-clusterMode(none).
+clusterMode(global) --> "global".
+clusterMode(local) --> "local".
+clusterMode(none) --> "none".
 
 
 
 %! dirType(+DirectionType:oneof([back,both,forward,none]))// .
 
-dirType(DirType) -->
-  {dirType(DirType)},
-  atom(DirType).
-
-dirType(back).
-dirType(both).
-dirType(forward).
-dirType(none).
+dirType(back) --> "back".
+dirType(both) --> "both".
+dirType(forward) --> "forward".
+dirType(none) --> "none".
 
 
 
 %! double(+Double:float)// .
 
-double(N) -->
-  float(N).
+double(N) --> float(N).
 
 
 
 %! doubleList(+Doubles:list(float))// .
 
-doubleList(L) -->
-  *(double, L, [separator(colon)]).
+doubleList([H|T]) --> double(H), (":", !, doubleList(T) ; {T = []}).
 
 
 
@@ -210,15 +186,11 @@ escString(S1) -->
   ->  string_phrase(escape_double_quotes, S1, S2)
   ;   atom_phrase(escape_double_quotes, S1, S2)
   )},
-  quoted(atom(S2)).
+  "\"", atom(S2), "\"".
 
-escape_double_quotes, [92,34] -->
-  [34], !,
-  escape_double_quotes.
-escape_double_quotes, [X] -->
-  [X], !,
-  escape_double_quotes.
-escape_double_quotes --> [].
+escape_double_quotes, [0'\\,0'"] --> [0'"], !, escape_double_quotes.
+escape_double_quotes, [X]        --> [X],   !, escape_double_quotes.
+escape_double_quotes             --> "".
 
 
 
@@ -232,29 +204,22 @@ escape_double_quotes --> [].
 
 %! lblString(+String:compound)// .
 
-lblString(html_like_label(V)) -->
-  gv_html_like_label(V).
-lblString(V) -->
-  escString(V).
+lblString(html_like_label(V)) --> gv_html_like_label(V).
+lblString(V) --> escString(V).
 
 
 
 %! int(+Integer:integer)// .
 
-int(V) -->
-  integer(V).
+int(V) --> integer(V).
 
 
 
 %! outputMode(+OutputMode:atom)// .
 
-outputMode(V) -->
-  {outputMode(V)},
-  atom(V).
-
-outputMode(breadthfirst).
-outputMode(edgesfirst).
-outputMode(nodesfirst).
+outputMode(breadthfirst) --> "breadthfirst".
+outputMode(edgesfirst)   --> "edgesfirst".
+outputMode(nodesfirst)   --> "nodesfirst".
 
 
 
@@ -264,18 +229,14 @@ outputMode(nodesfirst).
 
 %! pagedir(+PageDirection:atom)// .
 
-pagedir(V) -->
-  {pagedir(V)},
-  atom(V).
-
-pagedir('BL').
-pagedir('BR').
-pagedir('LB').
-pagedir('LT').
-pagedir('RB').
-pagedir('RT').
-pagedir('TL').
-pagedir('TR').
+pagedir('BL') --> "BL".
+pagedir('BR') --> "BR".
+pagedir('LB') --> "LB".
+pagedir('LT') --> "LT".
+pagedir('RB') --> "RB".
+pagedir('RT') --> "RT".
+pagedir('TL') --> "TL".
+pagedir('TR') --> "TR".
 
 
 
@@ -284,7 +245,7 @@ pagedir('TR').
 % `point(X:float,Y:float,Changeable:boolean)`.
 
 point(point(X,Y,Changeable)) -->
-  '#'(2, float, [X,Y], [separator(comma)]),
+  float(X), ",", float(Y),
   input_changeable(Changeable).
 
 input_changeable(false) --> "".
@@ -305,60 +266,44 @@ pointList(Points) -->
 
 %! quadType(+QuadType:atom)// .
 
-quadType(V) -->
-  {quadType(V)},
-  atom(V).
-
-quadType(fast).
-quadType(none).
-quadType(normal).
+quadType(fast) --> "fast".
+quadType(none) --> "none".
+quadType(normal) --> "normal".
 
 
 
 %! rankType(+RankType:atom)// .
 
-rankType(V) -->
-  {rankType(V)},
-  atom(V).
-
-rankType(max).
-rankType(min).
-rankType(same).
-rankType(sink).
-rankType(source).
+rankType(max) --> "max".
+rankType(min) --> "min".
+rankType(same) --> "same".
+rankType(sink) --> "sink".
+rankType(source) --> "source".
 
 
 
-%! rankdir(+RankDirection:atom)// .
+%! rankdir(+RankDirection:oneof(['BT','LR','RL','TB']))// .
 
-rankdir(V) -->
-  {rankdir(V)},
-  atom(V).
-
-rankdir('BT').
-rankdir('LR').
-rankdir('RL').
-rankdir('TB').
+rankdir('BT') --> "BT".
+rankdir('LR') --> "LR".
+rankdir('RL') --> "RL".
+rankdir('TB') --> "TB".
 
 
 
 %! rect(+Rectangle:compound)// .
 
 rect(rect(LowerLeftX,LowerLeftY,UpperRightX,UpperRightY)) -->
-  '#'(
-    4,
-    float,
-    [LowerLeftX,LowerLeftY,UpperRightX,UpperRightY],
-    [separator(comma)]
-  ).
+  float(LowerLeftX), ",",
+  float(LowerLeftY), ",",
+  float(UpperRightX), ",",
+  float(UpperRightY).
 
 
 
 %! shape(+Shape:atom)// .
 
-shape(V) -->
-  {polygon_based_shape(V)},
-  atom(V).
+shape(V) --> {polygon_based_shape(V)}, atom(V).
 
 polygon_based_shape(assembly).
 polygon_based_shape(box).
@@ -420,9 +365,7 @@ polygon_based_shape(utr).
 
 %! smoothType(+SmoothType:atom)// .
 
-smoothType(V) -->
-  {smoothType(V)},
-  atom(V).
+smoothType(V) --> {smoothType(V)}, atom(V).
 
 smoothType(avg_dist).
 smoothType(graph_dist).
@@ -445,16 +388,13 @@ smoothType(triangle).
 %! string(?String:atom)// .
 % A GraphViz string.
 
-string(Content) -->
-  quoted(atom(Content)).
+string(Content) --> "\"", atom(Content), "\"".
 
 
 
 %! style(?Context:oneof([cluster,edge,node]), ?Style:atom) is nondet.
 
-style(Context, Style) -->
-  {style(Context, Style)},
-  atom(Style).
+style(Context, Style) --> {style(Context, Style)}, atom(Style).
 
 style(cluster, bold).
 style(cluster, dashed).

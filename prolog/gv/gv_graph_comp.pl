@@ -32,7 +32,6 @@ a_list = ID "=" ID [","] [a_list]
 :- use_module(library(dcg/dcg_abnf)).
 :- use_module(library(dcg/dcg_ascii)).
 :- use_module(library(dcg/dcg_content)).
-:- use_module(library(dcg/dcg_quoted)).
 :- use_module(library(gv/gv_attrs)).
 :- use_module(library(gv/gv_html)).
 :- use_module(library(error)).
@@ -114,9 +113,7 @@ gv_generic_attributes_statement(Kind, I, Attrs) -->
 
 %! gv_kind(+Kind:oneof([edge,graph,node]))// .
 
-gv_kind(Kind) -->
-  {must_be(oneof([edge,graph,node]), Kind)},
-  atom(Kind).
+gv_kind(Kind) --> {must_be(oneof([edge,graph,node]), Kind)}, atom(Kind).
 
 
 
@@ -144,7 +141,7 @@ gv_ranked_node_collection(I, RankVTerm-VTerms) -->
   "\n",
 
   % Vertice statements.
-  *(gv_node_statement(NewI), [RankVTerm|VTerms], []),
+  *(gv_node_statement(NewI), [RankVTerm|VTerms]),
 
   % We want to indent the closing curly brace.
   tab(I),
@@ -161,8 +158,7 @@ gv_ranked_node_collection(I, RankVTerm-VTerms) -->
 %!   +Attributes:list(compound)
 %! )// is det.
 
-gv_attrs(Kind, L) -->
-  "[", *(gv_attr(Kind), L, []), "]".
+gv_attrs(Kind, L) --> "[", *(gv_attr(Kind), L), "]".
 
 
 %! gv_attr(+Context:oneof([edge,graph,node]), +Attribute:compound)// is det.
@@ -221,19 +217,16 @@ gv_id(Atom) -->
 %! gv_id_first(+First:code)// is det.
 % Generates the first character of a GraphViz identifier.
 
-gv_id_first(X) -->
-  ascii_letter(X).
-gv_id_first(X) -->
-  underscore(X).
+gv_id_first(C)   --> ascii_alpha(C), !.
+gv_id_first(0'_) --> "_".
 
 
 %! gv_id_rest(+NonFirst:code)// is det.
 % Generates a non-first character of a GraphViz identifier.
 
-gv_id_rest([]) --> !, "".
-gv_id_rest([H|T]) -->
-  (ascii_alpha_numeric(H) ; underscore(H)),
-  gv_id_rest(T).
+gv_id_rest([H|T])   --> ascii_alpha_num(C), !, gv_id_rest(T).
+gv_id_rest([0'_|T]) --> "_",                !, gv_id_rest(T).
+gv_id_rest([])      --> "".
 
 
 
@@ -267,34 +260,22 @@ gv_keyword --> "subgraph".
 % @tbd Add support for GraphViz port indicators
 %      inside GraphViz node identifiers.
 
-gv_node_id(Id) -->
-  gv_id(Id), !.
-%gv_node_id(_) -->
-%  gv_id(_),
-%  gv_port.
-gv_node_id(Id) -->
-  {type_error(gv_node_id, Id)}.
+gv_node_id(Id) --> gv_id(Id), !.
+%gv_node_id(_) --> gv_id(_), gv_port.
+gv_node_id(Id) --> {type_error(gv_node_id, Id)}.
 
 
 
 %! gv_port// is det.
 
-gv_port -->
-  gv_port_location,
-  (gv_port_angle ; "").
-gv_port -->
-  gv_port_angle,
-  (gv_port_location ; "").
-gv_port -->
-  ":", gv_compass_pt(_).
+gv_port --> gv_port_location, (gv_port_angle ; "").
+gv_port --> gv_port_angle, (gv_port_location ; "").
+gv_port --> ":", gv_compass_pt(_).
 
-gv_port_angle -->
-  "@", gv_id(_).
+gv_port_angle --> "@", gv_id(_).
 
-gv_port_location -->
-  ":", gv_id(_).
-gv_port_location -->
-  ":[", gv_id(_), ",", gv_id(_), "]".
+gv_port_location --> ":", gv_id(_).
+gv_port_location --> ":[", gv_id(_), ",", gv_id(_), "]".
 
 
 
@@ -304,12 +285,12 @@ gv_port_location -->
 % ```
 
 gv_compass_pt('_') --> "_".
-gv_compass_pt(c) --> "c".
-gv_compass_pt(e) --> "e".
-gv_compass_pt(n) --> "n".
-gv_compass_pt(ne) --> "ne".
-gv_compass_pt(nw) --> "nw".
-gv_compass_pt(s) --> "s".
-gv_compass_pt(se) --> "se".
-gv_compass_pt(sw) --> "sw".
-gv_compass_pt(w) --> "w".
+gv_compass_pt(c)   --> "c".
+gv_compass_pt(e)   --> "e".
+gv_compass_pt(n)   --> "n".
+gv_compass_pt(ne)  --> "ne".
+gv_compass_pt(nw)  --> "nw".
+gv_compass_pt(s)   --> "s".
+gv_compass_pt(se)  --> "se".
+gv_compass_pt(sw)  --> "sw".
+gv_compass_pt(w)   --> "w".
