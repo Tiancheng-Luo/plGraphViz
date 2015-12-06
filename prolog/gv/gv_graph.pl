@@ -15,11 +15,11 @@ In GraphViz vertices are called 'nodes'.
 ---
 
 @author Wouter Beek
-@version 2015/07
+@version 2015/07, 2015/12
 */
 
 :- use_module(library(apply)).
-:- use_module(library(dcg/dcg_abnf)).
+:- use_module(library(dcg/dcg_ext)).
 :- use_module(library(dcg/dcg_content)).
 :- use_module(library(gv/gv_graph_comp)).
 :- use_module(library(lists)).
@@ -29,7 +29,13 @@ In GraphViz vertices are called 'nodes'.
 
 
 
-%! gv_graph(+Graph:compound)//
+%! gv_graph(+Graph:compound)// is det.
+% Wrapper around gv_graph//2 with no indentation.
+
+gv_graph(G) --> gv_graph(G, 0).
+
+
+%! gv_graph(+Graph:compound, +Indent:nonneg)// is det.
 % The follow graph attributes are supported,
 % beyond the GraphViz attributes for graphs:
 %   * `directed(+boolean)`
@@ -60,9 +66,6 @@ In GraphViz vertices are called 'nodes'.
 %      http://www.graphviz.org/doc/info/attrs.html#k:escString
 % @tbd Assert attributes that are generic with respect to a subgraph.
 % @tbd Not all vertex and edge properties can be shared it seems (e.g., label).
-
-gv_graph(G) -->
-  gv_graph(G, 0).
 
 gv_graph(G1, I) -->
   {
@@ -122,26 +125,20 @@ gv_graph(G1, I) -->
 
   % The list of GraphViz nodes.
   gv_node_statements(NewI, NewVTerms),
-  (   {NewVTerms == []}
-  ->  ""
-  ;   "\n"
-  ),
+  ({NewVTerms == []} -> "" ; "\n"),
 
   % The ranked GraphViz nodes (displayed at the same height).
   gv_ranked_node_collections(NewI, RankedVTerms),
-  (   {RankedVTerms == []}
-  ->  ""
-  ;   "\n"
-  ),
+  ({RankedVTerms == []} -> "" ; "\n"),
 
   {
     findall(
       edge(FromId,ToId,[]),
       (
-        nth0(Index1, RankedVTerms, rank(vertex(FromId,_),_)),
-        nth0(Index2, RankedVTerms, rank(vertex(ToId,_),_)),
+        nth0(J1, RankedVTerms, rank(vertex(FromId,_),_)),
+        nth0(J2, RankedVTerms, rank(vertex(ToId,_),_)),
         % We assume that the rank vertices are nicely ordered.
-        succ(Index1, Index2)
+        succ(J1, J2)
       ),
       RankEdges
     )
@@ -159,14 +156,27 @@ gv_graph(G1, I) -->
   tab(I),
   "}\n".
 
-gv_edge_statements(I, Dir, L) -->
-  *(gv_edge_statement(I, Dir), L, []), !.
 
-gv_node_statements(I, L) -->
-  *(gv_node_statement(I), L, []), !.
 
-gv_ranked_node_collections(I, L) -->
-  *(gv_ranked_node_collection(I), L, []), !.
+%! gv_edge_statements(
+%!   +Indent:nonneg,
+%!   +Directed:boolean,
+%!   +Statements:list(compound)
+%! )// is det.
+
+gv_edge_statements(I, Dir, L) --> *(gv_edge_statement(I, Dir), L).
+
+
+
+%! gv_edge_statements(+Indent:nonneg, +Statements:list(compound))// is det.
+
+gv_node_statements(I, L) --> *(gv_node_statement(I), L).
+
+
+
+%! gv_ranked_node_collections(+Indent:nonneg, +Collections:list)// is det.
+
+gv_ranked_node_collections(I, L) --> *(gv_ranked_node_collection(I), L).
 
 
 
@@ -189,11 +199,13 @@ add_default(L1, Opt, L2):-
   ).
 
 
+
 %! gv_graph_type(+Directed:boolean)// is det.
 % The type of graph that is represented.
 
-gv_graph_type(false) --> "graph".
-gv_graph_type(true) --> "digraph".
+gv_graph_type(false) --> !, "graph".
+gv_graph_type(true)  -->    "digraph".
+
 
 
 %! gv_strict(+Strict:boolean)// is det.
@@ -201,16 +213,18 @@ gv_graph_type(true) --> "digraph".
 % no multi-edges.
 % This only applies to directed graphs.
 
-gv_strict(false) --> "".
-gv_strict(true) --> "strict ".
+gv_strict(false) --> !, "".
+gv_strict(true)  -->    "strict ".
+
 
 
 %! invlude_ranges(+Graph:compound, -GraphWithRanks:compound) is det.
 % Ensures that there is a ranks components in
 % the graph-denoting compound term.
 
-include_ranks(graph(Vs,Rs,Es,L), graph(Vs,Rs,Es,L)).
+include_ranks(graph(Vs,Rs,Es,L), graph(Vs,Rs,Es,L)):- !.
 include_ranks(graph(Vs,Es,L), graph(Vs,[],Es,L)).
+
 
 
 %! shared_attributes(

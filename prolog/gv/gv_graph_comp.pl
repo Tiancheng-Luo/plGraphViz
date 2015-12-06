@@ -24,13 +24,11 @@ a_list = ID "=" ID [","] [a_list]
 
 @author Wouter Beek
 @see http://www.graphviz.org/content/dot-language
-@version 2015/07-2015/08, 2015/10-2015/11
+@version 2015/07-2015/08, 2015/10-2015/12
 */
 
 :- use_module(library(apply)).
-:- use_module(library(dcg/basics)).
-:- use_module(library(dcg/dcg_abnf)).
-:- use_module(library(dcg/dcg_ascii)).
+:- use_module(library(dcg/dcg_ext)).
 :- use_module(library(dcg/dcg_content)).
 :- use_module(library(gv/gv_attrs)).
 :- use_module(library(gv/gv_html)).
@@ -166,7 +164,7 @@ gv_attrs(Kind, L) --> "[", *(gv_attr(Kind), L), "]".
 % We assume that the attribute has already been validated.
 
 gv_attr(Context, Attr) -->
-  {Attr =.. [N,V]},
+  {Attr =.. [N,V], (N == peripheries -> gtrace ; true)},
   gv_id(N), "=", gv_attr_value(Context, N=V), ";".
 
 
@@ -217,15 +215,15 @@ gv_id(Atom) -->
 %! gv_id_first(+First:code)// is det.
 % Generates the first character of a GraphViz identifier.
 
-gv_id_first(C)   --> ascii_alpha(C), !.
+gv_id_first(C)   --> alpha(C), !.
 gv_id_first(0'_) --> "_".
 
 
 %! gv_id_rest(+NonFirst:code)// is det.
 % Generates a non-first character of a GraphViz identifier.
 
-gv_id_rest([H|T])   --> ascii_alpha_num(C), !, gv_id_rest(T).
-gv_id_rest([0'_|T]) --> "_",                !, gv_id_rest(T).
+gv_id_rest([H|T])   --> alphadigit(H), !, gv_id_rest(T).
+gv_id_rest([0'_|T]) --> "_",           !, gv_id_rest(T).
 gv_id_rest([])      --> "".
 
 

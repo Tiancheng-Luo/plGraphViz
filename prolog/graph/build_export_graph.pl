@@ -51,7 +51,7 @@ Vertex coordinates:
 ---
 
 @author Wouter Beek
-@version 2015/07, 2015/09-2015/11
+@version 2015/07, 2015/09-2015/12
 */
 
 :- use_module(library(apply)).
@@ -222,8 +222,9 @@ edge_term(Vs, E, edge(FromId,ToId,EAttrs), Opts):-
   if_option(edge_style(StyleFunction), Opts,
     call(StyleFunction, E, EStyle)
   ),
-
-  merge_options(
+  
+  exclude(
+    option_has_var_value,
     [
       arrowhead(EArrowhead),
       color(EColor),
@@ -275,7 +276,8 @@ graph_attributes(GAttrs, Opts):-
   % Overlap.
   option(graph_overlap(Overlap), Opts, false),
 
-  merge_options(
+  exclude(
+    option_has_var_value,
     [
       charset(Charset),
       colorscheme(Colorscheme),
@@ -361,7 +363,8 @@ vertex_term(Vs, V, vertex(VId,VAttrs), Opts):-
     call(UriFunction, V, VUri)
   ),
 
-  merge_options(
+  exclude(
+    option_has_var_value,
     [
       color(VColor),
       image(VImage),
@@ -385,17 +388,3 @@ vertex_term(Vs, V, vertex(VId,VAttrs), Opts):-
 edge_components(edge(FromV,_,ToV), FromV, ToV):- !.
 edge_components(edge(FromV,ToV), FromV, ToV):- !.
 edge_components(FromV-ToV, FromV, ToV):- !.
-
-
-
-%! merge_options(+FromOptions:list(compound), -ToOptions:list(compound)) is det.
-
-merge_options([], []).
-% Skip uninstantiated values.
-merge_options([H|T1], T2):-
-  merge_options(T1, T2),
-  H =.. [_,V],
-  var(V), !.
-% Include instantiated values.
-merge_options([H|T1], [H|T2]):-
-  merge_options(T1, T2).
