@@ -12,7 +12,7 @@
   ]
 ).
 
-/** <module> FCA export
+/** <module> FCA visualization
 
 @author Wouter Beek
 @version 2015/11-2015/12
@@ -30,7 +30,7 @@
 
 :- meta_predicate(concept_label(+,1,1,+,-)).
 :- meta_predicate(concept_label(+,1,1,+,?,?)).
-:- meta_predicate(fca_export_graph(+,-,:)).
+:- meta_predicate(fca_export_graph(+,?,:)).
 :- meta_predicate(fca_viz(+,?,:)).
 
 :- predicate_options(fca_export_graph/3, 3, [
@@ -59,7 +59,7 @@ fca_export_graph(Context, ExportG):-
 %! fca_export_graph(
 %!   +Context:compound,
 %!   -ExportGraph:compound,
-%!   +Options:list(compound)
+%!   :Options:list(compound)
 %! ) is det.
 % The following optios are supported:
 %   * attribute_label(+callable)
