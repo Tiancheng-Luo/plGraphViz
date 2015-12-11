@@ -1,18 +1,21 @@
 :- module(
-  fca_export,
+  fca_viz,
   [
-    fca_export/2, % +Context:compound
-                  % ?File:atom
-    fca_export/3 % +Context:compound
-                 % ?File:atom
-                 % :Options:list(compound)
+    fca_export_graph/2, % +Context, -ExportGraph
+    fca_export_graph/3, % +Context:compound
+                        % -ExportGraph:compound
+                        % :Options:list(compound)
+    fca_viz/2, % +Context, ?File
+    fca_viz/3 % +Context:compound
+              % ?File:atom
+              % :Options:list(compound)
   ]
 ).
 
 /** <module> FCA export
 
 @author Wouter Beek
-@version 2015/11
+@version 2015/11-2015/12
 */
 
 :- use_module(library(dcg/dcg_collection)).
@@ -27,11 +30,16 @@
 
 :- meta_predicate(concept_label(+,1,1,+,-)).
 :- meta_predicate(concept_label(+,1,1,+,?,?)).
-:- meta_predicate(fca_export(+,?,:)).
+:- meta_predicate(fca_export_graph(+,-,:)).
+:- meta_predicate(fca_viz(+,?,:)).
 
-:- predicate_options(fca_export/3, 3, [
+:- predicate_options(fca_export_graph/3, 3, [
+     attribute_label(+callable),
      concept_label(+oneof([attributes,both,objects])),
-     object_label(+callable),
+     object_label(+callable)
+   ]).
+:- predicate_options(fca_viz/3, 3, [
+     pass_to(fca_export_graph/3, 3),
      pass_to(gv_export/3, 3)
    ]).
 
@@ -41,15 +49,18 @@ is_meta(object_label).
 
 
 
+%! fca_export_graph(+Context:compound, -ExportGraph:compound) is det.
+% Wrapper around fca_export_graph/3 with default options.
 
-%! fca_export(+Context:compound, ?File:atom) is det.
-% Wrapper around fca_export/3 with default options.
-
-fca_export(Context, File):-
-  fca_export(Context, File, []).
+fca_export_graph(Context, ExportG):-
+  fca_export_graph(Context, ExportG, []).
 
 
-%! fca_export(+Context:compound, ?File:atom, :Options:list(compound)) is det.
+%! fca_export_graph(
+%!   +Context:compound,
+%!   -ExportGraph:compound,
+%!   +Options:list(compound)
+%! ) is det.
 % The following optios are supported:
 %   * attribute_label(+callable)
 %     DCG writing the labels for individual attributes.
@@ -62,24 +73,36 @@ fca_export(Context, File):-
 %     DCG writing the labels for individual objects.
 %     Default is pl_term//1.
 
-fca_export(Context, File, Opts1):-
+fca_export_graph(Context, ExportG, Opts1):-
   fca_hasse(Context, Hasse),
-  
   meta_options(is_meta, Opts1, Opts2),
   option(attribute_label(ALbl_1), Opts2, pl_term),
   option(concept_label(Mode), Opts2, both),
   option(object_label(OLbl_1), Opts2, pl_term),
   merge_options(
     [
-      vertex_label(fca_export:concept_label(Mode, OLbl_1, ALbl_1)),
+      vertex_label(fca_viz:concept_label(Mode, OLbl_1, ALbl_1)),
       vertex_rank(fca:concept_cardinality)
     ],
     Opts2,
     Opts3
   ),
-  build_export_graph(Hasse, ExportG, Opts3),
+  build_export_graph(Hasse, ExportG, Opts3).
 
-  gv_export(ExportG, File, Opts2).
+
+
+%! fca_viz(+Context:compound, ?File:atom) is det.
+% Wrapper around fca_viz/3 with default options.
+
+fca_viz(Context, File):-
+  fca_viz(Context, File, []).
+
+
+%! fca_viz(+Context:compound, ?File:atom, :Options:list(compound)) is det.
+
+fca_viz(Context, File, Opts):-
+  fca_export_graph(Context, ExportG, Opts),
+  gv_export(ExportG, File, Opts).
 
 
 

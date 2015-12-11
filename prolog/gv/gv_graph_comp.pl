@@ -164,7 +164,7 @@ gv_attrs(Kind, L) --> "[", *(gv_attr(Kind), L), "]".
 % We assume that the attribute has already been validated.
 
 gv_attr(Context, Attr) -->
-  {Attr =.. [N,V], (N == peripheries -> gtrace ; true)},
+  {Attr =.. [N,V]},
   gv_id(N), "=", gv_attr_value(Context, N=V), ";".
 
 

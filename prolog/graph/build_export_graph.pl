@@ -1,8 +1,7 @@
 :- module(
   build_export_graph,
   [
-    build_export_graph/2, % +Graph
-                          % -ExportGraph:compound
+    build_export_graph/2, % +Graph, -ExportGraph
     build_export_graph/3 % +Graph
                          % -ExportGraph:compound
                          % +Options:list(compound)
@@ -118,7 +117,7 @@ is_meta(vertex_uri).
 
 
 %! build_export_graph(+Graph, -ExportGraph:compound) is det.
-% Wrapper around build_export_graph/3.
+% Wrapper around build_export_graph/3 with default options.
 
 build_export_graph(G, ExportG):-
   build_export_graph(G, ExportG, []).
