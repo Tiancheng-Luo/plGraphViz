@@ -100,9 +100,10 @@ fca_viz(Context, File):-
 
 %! fca_viz(+Context:compound, ?File:atom, :Options:list(compound)) is det.
 
-fca_viz(Context, File, Opts):-
-  fca_export_graph(Context, ExportG, Opts),
-  gv_export(ExportG, File, Opts).
+fca_viz(Context, File, Opts1):-
+  meta_options(is_meta, Opts1, Opts2),
+  fca_export_graph(Context, ExportG, Opts2),
+  gv_export(ExportG, File, Opts2).
 
 
 
