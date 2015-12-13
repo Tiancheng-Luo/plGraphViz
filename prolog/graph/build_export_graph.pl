@@ -54,6 +54,8 @@ Vertex coordinates:
 */
 
 :- use_module(library(apply)).
+:- use_module(library(dcg/dcg_call)).
+:- use_module(library(dcg/dcg_phrase)).
 :- use_module(library(graph/s/s_graph)).
 :- use_module(library(lambda)).
 :- use_module(library(list_ext)).
@@ -190,37 +192,29 @@ build_export_rank_term(N, vertex(Id,[label(""),shape(none)])):-
 
 edge_term(Vs, E, edge(FromId,ToId,EAttrs), Opts):-
   % Arrowhead
-  if_option(edge_arrowhead(ArrowheadFunction), Opts,
-    call(ArrowheadFunction, E, EArrowhead)
+  if_option(edge_arrowhead(Arrowhead_2), Opts,
+    call(Arrowhead_2, E, EArrowhead)
   ),
   
   % Color.
-  if_option(edge_color(ColorFunction), Opts,
-    call(ColorFunction, E, EColor)
-  ),
+  if_option(edge_color(ColorFunction), Opts, call(ColorFunction, E, EColor)),
   
   % Id.
-  (   option(edge_id(IdFunction), Opts)
-  ->  call(IdFunction, E, FromId, ToId)
+  (   option(edge_id(Id_2), Opts)
+  ->  call(Id_2, E, FromId, ToId)
   ;   edge_components(E, FromV, ToV),
       nth0chk(FromId, Vs, FromV),
       nth0chk(ToId, Vs, ToV)
   ),
   
   % Label.
-  if_option(edge_label(LabelFunction), Opts,
-    call(LabelFunction, E, ELabel)
-  ),
+  if_option(edge_label(ELabel_3), Opts, string_phrase(dcg_call(ELabel_3, E), ELabel)),
   
   % Penwidth.
-  if_option(edge_penwidth(PenwidthFunction), Opts,
-    call(PenwidthFunction, E, EPenwidth)
-  ),
+  if_option(edge_penwidth(Penwidth_2), Opts, call(Penwidth_2, E, EPenwidth)),
   
   % Style.
-  if_option(edge_style(StyleFunction), Opts,
-    call(StyleFunction, E, EStyle)
-  ),
+  if_option(edge_style(Style_2), Opts, call(Style_2, E, EStyle)),
   
   exclude(
     option_has_var_value,
@@ -274,7 +268,6 @@ graph_attributes(GAttrs, Opts):-
   option(graph_label(GLabel), Opts, '""'),
   % Overlap.
   option(graph_overlap(Overlap), Opts, false),
-
   exclude(
     option_has_var_value,
     [
@@ -320,47 +313,32 @@ graph_attributes(GAttrs, Opts):-
 
 vertex_term(Vs, V, vertex(VId,VAttrs), Opts):-
   % Color.
-  if_option(vertex_color(ColorFunction), Opts,
-    call(ColorFunction, V, VColor)
-  ),
+  if_option(vertex_color(Color_2), Opts, call(Color_2, V, VColor)),
   
   % Id.
-  (   option(vertex_id(IdFunction), Opts)
-  ->  call(IdFunction, V, VId)
-  ;   nth0chk(VId, Vs, V)
-  ),
+  (option(vertex_id(Id_2), Opts) -> call(Id_2, V, VId) ; nth0chk(VId, Vs, V)),
   
   % Image.
-  ignore(
-    if_option(vertex_image(ImageFunction), Opts,
-      call(ImageFunction, V, VImage)
-    )
-  ),
+  ignore(if_option(vertex_image(Image_2), Opts, call(Image_2, V, VImage))),
 
   % Label.
-  if_option(vertex_label(LabelFunction), Opts,
-    call(LabelFunction, V, VLabel)
-  ),
+  if_option(vertex_label(VLabel_2), Opts, string_phrase(dcg_call(VLabel_2, V), VLabel)),
 
   % Peripheries.
-  if_option(vertex_peripheries(PeripheriesFunction), Opts,
-    call(PeripheriesFunction, V, VPeripheries)
+  if_option(vertex_peripheries(Peripheries_2), Opts,
+    call(Peripheries_2, V, VPeripheries)
   ),
 
   % Position.
-  if_option(vertex_position(PositionFunction), Opts,
-    call(PositionFunction, Vs, Opts, V, VPosition)
+  if_option(vertex_position(Position_4), Opts,
+    call(Position_4, Vs, Opts, V, VPosition)
   ),
 
   % Shape.
-  if_option(vertex_shape(ShapeFunction), Opts,
-    call(ShapeFunction, V, VShape)
-  ),
+  if_option(vertex_shape(Shape_2), Opts, call(Shape_2, V, VShape)),
   
   % URI
-  if_option(vertex_uri(UriFunction), Opts,
-    call(UriFunction, V, VUri)
-  ),
+  if_option(vertex_uri(Uri_2), Opts, call(Uri_2, V, VUri)),
 
   exclude(
     option_has_var_value,

@@ -64,10 +64,10 @@ fca_export_graph(Context, ExportG):-
 fca_export_graph(Context, ExportG, Opts1):-
   fca_hasse(Context, Hasse),
   meta_options(is_meta, Opts1, Opts2),
-  option(concept_label(Label_1), Opts2, concept_label),
+  option(concept_label(Label_3), Opts2, concept_label),
   merge_options(
     [
-      vertex_label(Label_1),
+      vertex_label(Label_3),
       vertex_rank(fca:concept_cardinality)
     ],
     Opts2,
@@ -91,12 +91,6 @@ fca_viz(Context, File, Opts1):-
   fca_export_graph(Context, ExportG, Opts2),
   gv_export(ExportG, File, Opts2).
 
-
-
-%! concept_label(+Concept:compound, -Label:atom) is det.
-
-concept_label(Concept, Lbl):-
-  string_phrase(concept_label(Concept), Lbl).
 
 
 %! concept_label(+Concept:compound)// is det.
