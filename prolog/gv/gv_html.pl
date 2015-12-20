@@ -210,7 +210,12 @@ text(Content)  --> text([Content]).
 % ```
 %
 % Supported attributes for BR:
-%   - `ALIGN="CENTER|LEFT|RIGHT"`
+%   * `ALIGN="CENTER|LEFT|RIGHT"`
+%
+% Supported attributes for FONT:
+%   * COLOR="color"
+%   * FACE="fontname"
+%   * POINT-SIZE="value"
 
 textitem(br(Attrs)) --> !,
   html_element(br, Attrs).
