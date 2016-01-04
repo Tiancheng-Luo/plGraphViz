@@ -1,5 +1,5 @@
 :- module(
-  gv_tree,
+  tree_viz,
   [
     tree_export_graph/2, % +Tree, ExportG
     tree_export_graph/3, % +Tree, ExportG, +Opts
@@ -19,6 +19,7 @@ Export trees to GraphViz.
 :- use_module(library(graph/build_export_graph)).
 :- use_module(library(gv/gv_file)).
 :- use_module(library(ordsets)).
+:- use_module(library(tree/tree)).
 
 :- predicate_options(tree_export_graph/3, 3, [
      pass_to(build_export_graph/4, 4)
@@ -39,8 +40,8 @@ Export trees to GraphViz.
 tree_export_graph(Tree, ExportG) :-
   tree_export_graph(Tree, ExportG, []).
 tree_export_graph(t(H,Subtrees), ExportG, Opts) :-
-  maplist(tree_export_graph, Subtrees, ExportGs),
-  maplist(unpack_graph, ExportGs, SubVs, SubEs),
+  maplist(tree_to_graph, Subtrees, Gs),
+  maplist(unpack_graph, Gs, SubVs, SubEs),
   ord_union([[H]|SubVs], Vs),
   ord_union(SubEs, Es),
   build_export_graph(graph(Vs,Es), ExportG, Opts).
