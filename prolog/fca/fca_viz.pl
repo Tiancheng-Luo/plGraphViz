@@ -2,22 +2,19 @@
   fca_viz,
   [
     fca_export_graph/2, % +Context, -ExportGraph
-    fca_export_graph/3, % +Context:compound
-                        % -ExportGraph:compound
-                        % :Options:list(compound)
-    fca_viz/2, % +Context, ?File
-    fca_viz/3 % +Context:compound
-              % ?File:atom
-              % :Options:list(compound)
+    fca_export_graph/3, % +Context, -ExportGraph, :Opts
+    fca_viz/2,          % +Context, ?File
+    fca_viz/3           % +Context, ?File, :Opts
   ]
 ).
 
 /** <module> FCA visualization
 
 @author Wouter Beek
-@version 2015/11-2015/12
+@version 2015/11-2016/01
 */
 
+:- use_module(library(aggregate)).
 :- use_module(library(dcg/dcg_collection)).
 :- use_module(library(dcg/dcg_phrase)).
 :- use_module(library(dcg/dcg_pl)).
@@ -36,7 +33,7 @@
    ]).
 :- predicate_options(fca_viz/3, 3, [
      pass_to(fca_export_graph/3, 3),
-     pass_to(gv_export/3, 3)
+     pass_to(graph_viz/3, 3)
    ]).
 
 is_meta(concept_label).
@@ -88,8 +85,15 @@ fca_viz(Context, File):-
 
 fca_viz(Context, File, Opts1):-
   meta_options(is_meta, Opts1, Opts2),
+  statistics(process_cputime, Time1),
   fca_export_graph(Context, ExportG, Opts2),
-  gv_export(ExportG, File, Opts2).
+  ExportG = graph(_,_,Es,_),
+  aggregate_all(max(N), (member(edge(V1,V2,_), Es), (N = V1 ; N = V2)), N),
+  ignore(option(number_of_vertices(N), Opts2)),
+  statistics(process_cputime, Time2),
+  Time is Time2 - Time1,
+  ignore(option(process_cputime(Time), Opts2)),
+  graph_viz(ExportG, File, Opts2).
 
 
 

@@ -1,18 +1,15 @@
 :- module(
   gv_file,
   [
-    gv_export/2, % +ExportGraph:compound
-                 % ?File:atom
-    gv_export/3 % +ExportGraph:compound
-                % ?File:atom
-                % +Options:list(nvpair)
+    graph_viz/2, % +ExportG, ?File
+    graph_viz/3  % +ExportG, ?File, +Opts
   ]
 ).
 
 /** <module> GraphViz file
 
 @author Wouter Beek
-@version 2015/07, 2015/10-2015/11
+@version 2015/07, 2015/10-2015/11, 2016/01
 */
 
 :- use_module(library(code_ext)).
@@ -23,7 +20,7 @@
 :- use_module(library(os/process_ext)).
 :- use_module(library(string_ext)).
 
-:- predicate_options(gv_export/3, 3, [
+:- predicate_options(graph_viz/3, 3, [
      pass_to(file_to_gv/3, 3)
    ]).
 :- predicate_options(file_to_gv/3, 3, [
@@ -40,14 +37,8 @@ user:module_uses(gv_file, program(dot)).
 
 
 
-%! gv_export(+ExportGraph:compound, ?File:atom) is det.
-% Wrapper around gv_export/3 with default options.
-
-gv_export(ExportG, File):-
-  gv_export(ExportG, File, []).
-
-
-%! gv_export(+ExportGraph:compound, ?File:atom, +Options:list(compound)) is det.
+%! graph_viz(+ExportGraph:compound, ?File:atom) is det.
+%! graph_viz(+ExportGraph:compound, ?File:atom, +Options:list(compound)) is det.
 % Returns a file containing a GraphViz visualization of the given graph.
 %
 % The following options are supported:
@@ -60,7 +51,9 @@ gv_export(ExportG, File):-
 %     Default is `pdf`.
 %     For possible values see gv_output_type/1.
 
-gv_export(ExportG, File, Opts):-
+graph_viz(ExportG, File):-
+  graph_viz(ExportG, File, []).
+graph_viz(ExportG, File, Opts):-
   once(phrase(gv_graph(ExportG), Cs)),
 
   % Be thread-safe.
