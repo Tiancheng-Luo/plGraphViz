@@ -24,7 +24,7 @@ a_list = ID "=" ID [","] [a_list]
 
 @author Wouter Beek
 @see http://www.graphviz.org/content/dot-language
-@version 2015/07-2015/08, 2015/10-2015/12
+@version 2015/07-2015/08, 2015/10-2016/01
 */
 
 :- use_module(library(apply)).
@@ -199,9 +199,7 @@ gv_id(double_quoted_string(Atom)) --> !,
   "\"", atom(Atom), "\"".
 % Numerals.
 gv_id(N) -->
-  {number(N)}, !,
-  % @tbd Use gv_numeral//1.
-  number(N).
+  gv_numeral(N), !.
 % Alpha-numeric strings.
 gv_id(Atom) -->
   {atom_codes(Atom, [H|T])},
@@ -264,6 +262,22 @@ gv_node_id(Id) --> {type_error(gv_node_id, Id)}.
 
 
 
+%! gv_numeral(-Number)// is det.
+% ```bnf
+% ('-')? ( '.' [0-9]+ | [0-9]+ ( '.' [0-9]* )? )
+% ```
+
+gv_numeral(N) -->
+  ("-" -> {Sg = -1} ; {Sg = 1}),
+  (   "."
+  ->  {I = 0}, +(digit, Ds), {pos_frac(Ds, Frac)}
+  ;   +(digit, Ds1), {pos_sum(Ds1, I)},
+      ("." -> *(digit, Ds2), {pos_frac(Ds2, Frac)} ; {Frac = 0.0})
+  ),
+  {N is Sg * (I + Frac)}.
+
+
+
 %! gv_port// is det.
 
 gv_port --> gv_port_location, (gv_port_angle ; "").
@@ -279,7 +293,7 @@ gv_port_location --> ":[", gv_id(_), ",", gv_id(_), "]".
 
 %! gv_compass_pt(+Direction:oneof(['_',c,e,n,ne,nw,s,se,sw,w]))// .
 % ```
-% compass_pt : (n | ne | e | se | s | sw | w | nw | c | _)
+% compass_pt : ( n | ne | e | se | s | sw | w | nw | c | _ )
 % ```
 
 gv_compass_pt('_') --> "_".
