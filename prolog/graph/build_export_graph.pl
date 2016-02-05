@@ -50,18 +50,18 @@ Vertex coordinates:
 ---
 
 @author Wouter Beek
-@version 2015/07, 2015/09-2015/12
+@version 2015/07, 2015/09-2016/01
 */
 
 :- use_module(library(apply)).
 :- use_module(library(dcg/dcg_call)).
 :- use_module(library(dcg/dcg_phrase)).
 :- use_module(library(graph/s/s_graph)).
-:- use_module(library(lambda)).
 :- use_module(library(list_ext)).
 :- use_module(library(option_ext)).
 :- use_module(library(ordsets)).
 :- use_module(library(pairs)).
+:- use_module(library(yall)).
 
 :- predicate_options(build_export_graph/4, 4, [
      pass_to(edge_term/3, 3),
@@ -142,9 +142,9 @@ build_export_graph(G, ExportG):-
 build_export_graph(G, graph(VTerms2,VRanks,ETerms,GAttrs), Opts1):-
   graph_components(G, Vs, Es),
   meta_options(is_meta, Opts1, Opts2),
-  maplist(\V^VTerm^vertex_term(Vs, V, VTerm, Opts2), Vs, VTerms1),
+  maplist([V,VTerm]>>vertex_term(Vs, V, VTerm, Opts2), Vs, VTerms1),
   build_export_ranks(Vs, VTerms1, VRanks, VTerms2, Opts2),
-  maplist(\E^ETerm^edge_term(Vs, E, ETerm, Opts2), Es, ETerms),
+  maplist([E,ETerm]>>edge_term(Vs, E, ETerm, Opts2), Es, ETerms),
   graph_attributes(GAttrs, Opts2).
 
 graph_components(graph(Vs,Es), Vs, Es):- !.
