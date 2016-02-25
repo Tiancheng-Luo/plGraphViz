@@ -46,10 +46,10 @@
 /** <module> GraphViz attribute types
 
 @author Wouter Beek
-@version 2015/07, 2015/11
+@version 2015/07, 2015/11, 2016/02
 */
 
-:- use_module(library(dcg/basics), except([string//1])).
+:- use_module(library(dcg/dcg_ext), except([string//1])).
 :- use_module(library(dcg/dcg_phrase)).
 :- use_module(library(gv/gv_html)).
 
@@ -256,7 +256,7 @@ input_changeable(true) --> "!".
 %! pointList(+Points:list(compound))// .
 
 pointList(Points) -->
-  *(point, Points, []).
+  *(point, Points).
 
 
 

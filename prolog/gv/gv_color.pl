@@ -14,11 +14,11 @@
 @author Wouter Beek
 @tbd Color value `transparent` is only available in the output formats
      ps, svg, fig, vmrl, and the bitmap formats.
-@version 2015/08, 2015/10
+@version 2015/08, 2015/10, 2016/02
 */
 
 :- use_module(library(apply)).
-:- use_module(library(dcg/basics)).
+:- use_module(library(dcg/dcg_ext)).
 :- use_module(library(dcg/dcg_content)).
 :- use_module(library(lists)).
 :- use_module(library(os/file_ext)).
@@ -40,7 +40,7 @@ color(rgbs(Red,Green,Blue,Alpha)) --> !,
   color(rgb(Red,Green,Blue)),
   hex_color(Alpha).
 color(hsv(Hue,Saturation,Value)) --> !,
-  '#'(3, hsv_color, [Hue,Saturation,Value], []).
+  '#'(3, hsv_color, [Hue,Saturation,Value]).
 color(Name) -->
   {gv_color(_, Name)},
   atom(Name).
@@ -56,7 +56,7 @@ hsv_color(D, Head, Tail):-
 %! colorList(+Pairs:list(pair(compound,float)))// .
 
 colorList(L) -->
-  '+'(wc, L, []).
+  '+'(wc, L).
 
 wc(Color-Float) -->
   color(Color),
