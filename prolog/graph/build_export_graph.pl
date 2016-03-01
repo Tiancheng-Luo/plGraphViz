@@ -54,8 +54,7 @@ Vertex coordinates:
 */
 
 :- use_module(library(apply)).
-:- use_module(library(dcg/dcg_call)).
-:- use_module(library(dcg/dcg_phrase)).
+:- use_module(library(dcg/dcg_ext)).
 :- use_module(library(graph/s/s_graph)).
 :- use_module(library(list_ext)).
 :- use_module(library(option_ext)).

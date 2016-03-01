@@ -25,8 +25,7 @@ gv_attr(
 */
 
 :- use_module(library(apply)).
-:- use_module(library(dcg/basics), except([string//1])).
-:- use_module(library(dcg/dcg_phrase)).
+:- use_module(library(dcg/dcg_ext)).
 :- use_module(library(gv/gv_attr_type)).
 :- use_module(library(http/http_download)).
 :- use_module(library(iostream)).

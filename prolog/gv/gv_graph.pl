@@ -20,7 +20,6 @@ In GraphViz vertices are called 'nodes'.
 
 :- use_module(library(apply)).
 :- use_module(library(dcg/dcg_ext)).
-:- use_module(library(dcg/dcg_content)).
 :- use_module(library(gv/gv_graph_comp)).
 :- use_module(library(lists)).
 :- use_module(library(option)).

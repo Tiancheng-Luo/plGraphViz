@@ -50,7 +50,6 @@
 */
 
 :- use_module(library(dcg/dcg_ext), except([string//1])).
-:- use_module(library(dcg/dcg_phrase)).
 :- use_module(library(gv/gv_html)).
 
 

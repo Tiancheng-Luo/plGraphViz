@@ -29,7 +29,6 @@ a_list = ID "=" ID [","] [a_list]
 
 :- use_module(library(apply)).
 :- use_module(library(dcg/dcg_ext)).
-:- use_module(library(dcg/dcg_content)).
 :- use_module(library(gv/gv_attrs)).
 :- use_module(library(gv/gv_html)).
 :- use_module(library(error)).
