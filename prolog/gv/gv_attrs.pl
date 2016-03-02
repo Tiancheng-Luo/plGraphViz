@@ -10,11 +10,12 @@
 /** <module> GraphViz attributes
 
 @author Wouter Beek
-@version 2015/07-2015/08, 2015/10
+@version 2015/07-2015/08, 2015/10, 2016/03
 */
 
 :- use_module(library(apply)).
 :- use_module(library(dcg/dcg_ext)).
+:- use_module(library(error)).
 :- use_module(library(gv/gv_attr_type), [gv_attr_type//1]).
 :- use_module(library(lists)).
 :- use_module(library(os/file_ext)).
@@ -33,11 +34,11 @@
 % Use the default if no value is given.
 gv_attr_value(Context, Name=Value) -->
   {
-    var(Value), !,
+    var(Value),
     gv_attr(Name, UsedBy, _, DefaultValue, _, _),
     % Check validity of context.
     memberchk(Context, UsedBy)
-  },
+  }, !,
   gv_attr_value(Context, Name=DefaultValue).
 gv_attr_value(Context, Name=Value) -->
   {
@@ -56,8 +57,10 @@ gv_attr_value(Context, Name=Value) -->
 
     % Check validity of Value w.r.t. minimum value -- if available.
     check_minimum(Value, Minimum)
-  },
+  }, !,
   dcg_call(gv_attr_type:Dcg, Value).
+gv_attr_value(_, Name=_) -->
+  {existence_error(gv_attr, Name)}.
 
 
 
