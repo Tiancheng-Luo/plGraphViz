@@ -198,7 +198,9 @@ gv_id(double_quoted_string(Atom)) --> !,
   "\"", atom(Atom), "\"".
 % Numerals.
 gv_id(N) -->
-  gv_numeral(N), !.
+  {number(N)}, !,
+  {number_codes(N, Cs)},
+  Cs.
 % Alpha-numeric strings.
 gv_id(Atom) -->
   {atom_codes(Atom, [H|T])},
