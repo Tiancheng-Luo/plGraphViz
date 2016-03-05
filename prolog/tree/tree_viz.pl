@@ -43,7 +43,7 @@ tree_export_graph(Tree, ExportG) :-
 
 tree_export_graph(Tree, ExportG, Opts) :-
   (   is_s_tree(Tree)
-  ->  s_tree_to_graph(Tree, G)
+  ->  tree_to_graph(Tree, G)
   ;   is_l_tree(Tree)
   ->  l_tree_to_graph(Tree, G)
   ),
