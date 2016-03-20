@@ -85,7 +85,7 @@ gv_edge_operator(Dir) -->
 %! gv_generic_attributes_statement(
 %!   +Kind:oneof([edge,graph,node]),
 %!   +Indent:nonneg,
-%!   +CategoryAttributes:list(nvpair)
+%!   +CategoryAttrs
 %! )//
 % A GraphViz statement describing generic attributes for a category of items.
 %

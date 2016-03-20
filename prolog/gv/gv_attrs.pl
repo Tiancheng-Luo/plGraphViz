@@ -2,7 +2,7 @@
   gv_attrs,
   [
     gv_attr_value//2 % +Context:oneof([cluster,edge,graph,node,subgraph])
-                     % +Attribute:nvpair
+                     % +Attr
   ]
 ).
 :- ensure_loaded(library('gv/gv_attrs.data')).
@@ -24,12 +24,11 @@
 
 
 
-%! gv_attr_value(
-%!   +Context:oneof([cluster,edge,graph,node,subgraph]),
-%!   +Attribute:compound
-%! )// is det.
+%! gv_attr_value(+Context, +Attr)// is det.
 % Uses the default value in case Value is uninstantiated.
 % Otherwise, performs a typecheck and converts the given value.
+%
+% Context can be either `cluster`, `edge`, `graph`, `node` or `subgraph`.
 
 % Use the default if no value is given.
 gv_attr_value(Context, Name=Value) -->
