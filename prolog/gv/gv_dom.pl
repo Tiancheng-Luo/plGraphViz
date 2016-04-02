@@ -1,9 +1,7 @@
 :- module(
   gv_dom,
   [
-    gv_dom/3 % +ExportGraph:compound
-             % -Dom:list(compound)
-             % +Options:list(compound)
+    gv_dom/3 % +ExportG, -Dom, +Opts
   ]
 ).
 
@@ -15,17 +13,13 @@
 
 :- use_module(library(gv/gv_file)).
 :- use_module(library(option)).
-:- use_module(library(svg/svg_dom)).
+:- use_module(library(svg/svg_ext)).
 
 
 
 
 
-%! gv_dom(
-%!   +ExportGraph:compound,
-%!   -Dom:list(compound),
-%!   +Options:list(compound)
-%! ) is det.
+%! gv_dom(+ExportG, -Dom, +Opts) is det.
 
 gv_dom(ExportG, Dom, Opts1):-
   % Make sure the file type of the output file is SvgDom.
