@@ -34,12 +34,12 @@
 
 color(rgb(Red,Green,Blue)) --> !,
   "#",
-  '#'(3, hex_color, [Red,Green,Blue]).
+  #(3, hex_color, [Red,Green,Blue]).
 color(rgbs(Red,Green,Blue,Alpha)) --> !,
   color(rgb(Red,Green,Blue)),
   hex_color(Alpha).
 color(hsv(Hue,Saturation,Value)) --> !,
-  '#'(3, hsv_color, [Hue,Saturation,Value]).
+  #(3, hsv_color, [Hue,Saturation,Value]).
 color(Name) -->
   {gv_color(_, Name)},
   atom(Name).

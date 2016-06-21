@@ -15,7 +15,7 @@
 :- use_module(library(http/http_download)).
 :- use_module(library(iostream)).
 :- use_module(library(lists)).
-:- use_module(library(pl/pl_term)).
+:- use_module(library(pl_term)).
 :- use_module(library(print_ext)).
 :- use_module(library(xpath)).
 :- use_module(library(xpath/xpath_table)).
