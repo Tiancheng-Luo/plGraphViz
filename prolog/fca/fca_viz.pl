@@ -15,7 +15,6 @@
 */
 
 :- use_module(library(aggregate)).
-:- use_module(library(dcg/dcg_collection)).
 :- use_module(library(dcg/dcg_ext)).
 :- use_module(library(dcg/dcg_pl)).
 :- use_module(library(fca/fca)).
