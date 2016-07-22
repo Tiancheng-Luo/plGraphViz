@@ -1,7 +1,7 @@
 :- module(
   gv_attrs_scrape,
   [
-    gv_attrs_scrape/1 % +File:atom
+    gv_attrs_scrape/1 % +File
   ]
 ).
 
@@ -11,45 +11,41 @@ Writes compound terms of the following form to file:
 
 ```prolog
 gv_attr(
-  ?Name:atom,
+  ?Name,
   ?UsedBy:list(oneof([cluster,edge,graph,node,subgraph])),
   ?Types:list(atom),
   ?Default,
   ?Minimum,
-  ?Notes:atom
+  ?Notes
 ) is nondet.
 ```
 
 @author Wouter Beek
-@version 2015/10
+@version 2015/10, 2016/07
 */
 
 :- use_module(library(apply)).
 :- use_module(library(dcg/dcg_ext)).
+:- use_module(library(debug)).
 :- use_module(library(gv/gv_attr_type)).
 :- use_module(library(http/http_download)).
-:- use_module(library(iostream)).
 :- use_module(library(lists)).
+:- use_module(library(os/io)).
 :- use_module(library(pl_term)).
 :- use_module(library(print_ext)).
 :- use_module(library(xpath)).
 :- use_module(library(xpath/xpath_table)).
+:- use_module(library(yall)).
 
 
 
 
 
-%! gv_attrs_scrape(+File:atom) is det.
+%! gv_attrs_scrape(+File) is det.
 
 gv_attrs_scrape(File):-
-  setup_call_cleanup(
-    open_any(File, write, Write, Close, []),
-    verbose(
-      gv_attrs_download(Write),
-      "Updating the GraphViz attributes table."
-    ),
-    close_any(Close)
-  ).
+  debug(gv, "Updating the GraphViz attributes table.", []),
+  call_to_stream(File, [In,Meta,Meta]>>gv_attrs_download(In)).
 
 
 gv_attrs_download(Write):-
@@ -78,7 +74,7 @@ gv_attrs_iri('http://www.graphviz.org/doc/info/attrs.html').
 
 % HELPERS %
 
-%! translate_default(+Default1:atom, -Default2:atom) is det.
+%! translate_default(+Default1, -Default2) is det.
 
 % The empty string is represented by the empty atom.
 translate_default('""', ''):- !.
