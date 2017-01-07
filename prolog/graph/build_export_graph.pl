@@ -1,10 +1,8 @@
 :- module(
   build_export_graph,
   [
-    build_export_graph/2, % +Graph, -ExportGraph
-    build_export_graph/3 % +Graph
-                         % -ExportGraph:compound
-                         % +Options:list(compound)
+    build_export_graph/2, % +G, -ExportG
+    build_export_graph/3  % +G, -ExportG, +Opts
   ]
 ).
 
@@ -17,13 +15,13 @@ Support for building GIF representations.
 ## Graph
 
 ```prolog
-graph(Vs:ordset(compound),Ranks,Es:compound,Attributes:list(compound))
+graph(Vs:ordset(compound),Ranks,Es:compound,Attrs:list(compound))
 ```
 
 ### Edge
 
 ```prolog
-edge(FromVertexId,ToVertexId,Attributes:list(compound))
+edge(FromVertexId,ToVertexId,Attrs:list(compound))
 ```
 
 ### Rank
@@ -35,7 +33,7 @@ RankVertex:compound-ContentVertices:ordset(compound)
 ### Vertex
 
 ```prolog
-vertex(Id,Attributes:list(compound))
+vertex(Id,Attrs:list(compound))
 ```
 
 # Property functions
@@ -50,7 +48,7 @@ Vertex coordinates:
 ---
 
 @author Wouter Beek
-@version 2015/07, 2015/09-2016/01
+@version 2015/07, 2015/09-2016/01, 2016/12
 */
 
 :- use_module(library(apply)).
@@ -94,7 +92,8 @@ Vertex coordinates:
      vertex_uri(+callable)
    ]).
 
-:- meta_predicate(build_export_graph(+,-,:)).
+:- meta_predicate
+    build_export_graph(+, -, :).
 
 is_meta(edge_arrowhead).
 is_meta(edge_color).
@@ -116,26 +115,24 @@ is_meta(vertex_uri).
 
 
 
-%! build_export_graph(+Graph, -ExportGraph:compound) is det.
-% Wrapper around build_export_graph/3 with default options.
+%! build_export_graph(+G, -ExportG) is det.
+%! build_export_graph(+G, -ExportG, +Opts) is det.
+%
+% Graph G is either:
+%
+%   * a coumpound term `graph(Vs,Es)`, or
+%
+%   * an unlabeled graph as defined by `library(ugraph)`.
+%
+% The following options are supported:
+%
+%   * `vertex_rank(:RankFunction)`
+%
+%     Assigns a non-negative integer to each vertex.  No default.
 
 build_export_graph(G, ExportG):-
   build_export_graph(G, ExportG, []).
 
-
-%! build_export_graph(
-%!   +Graph,
-%!   -ExportGraph:compound,
-%!   +Options:list(compound)
-%! ) is det.
-% Graph is either:
-%   * a coumpound term `graph(Vs,Es)`, or
-%   * an unlabeled graph as defined by `library(ugraph)`.
-%
-% The following options are supported:
-%   * `vertex_rank(:RankFunction)`
-%     Assigns a non-negative integer to each vertex.
-%     No default.
 
 build_export_graph(G, graph(VTerms2,VRanks,ETerms,GAttrs), Opts1):-
   graph_components(G, Vs, Es),
@@ -145,9 +142,11 @@ build_export_graph(G, graph(VTerms2,VRanks,ETerms,GAttrs), Opts1):-
   maplist(edge_term0(Vs, Opts2), Es, ETerms),
   graph_attributes(GAttrs, Opts2).
 
-vertex_term0(Vs, Opts, V, VTerm) :- vertex_term(Vs, V, VTerm, Opts).
+vertex_term0(Vs, Opts, V, VTerm) :-
+  vertex_term(Vs, V, VTerm, Opts).
 
-edge_term0(Vs, Opts, E, ETerm) :- edge_term(Vs, E, ETerm, Opts).
+edge_term0(Vs, Opts, E, ETerm) :-
+  edge_term(Vs, E, ETerm, Opts).
 
 graph_components(graph(Vs,Es), Vs, Es):- !.
 graph_components(G, Vs, Es):-
@@ -171,11 +170,10 @@ build_export_rank_term(N, vertex(Id,[label(""),shape(none)])):-
 
 
 
-%! edge_term(
-%!   +Vertices:ordset(compound),
+%! edge_term(+Vs:ordset(compound),
 %!   +Edge:compound,
 %!   -EdgeTerm:compound,
-%!   +Options:list(compound)
+%!   +Opts:list(compound)
 %! ) is det.
 % The following options are supported:
 %   * `edge_arrowhead(+callable)`
@@ -233,8 +231,8 @@ edge_term(Vs, E, edge(FromId,ToId,EAttrs), Opts):-
 
 
 %! graph_attributes(
-%!   -GraphAttributes:list(compound),
-%!   +Options:list(compound)
+%!   -GAttrs:list(compound),
+%!   +Opts:list(compound)
 %! ) is det.
 % The following options are supported:
 %   * `graph_charset(+oneof(['iso-8859-1','Latin1','UTF-8']))`
@@ -285,33 +283,39 @@ graph_attributes(GAttrs, Opts):-
 
 
 
-%! vertex_term(
-%!   +Vertices:ordset(compound),
-%!   +Vertex:compound,
-%!   -VertexTerm:compound,
-%!   +Options:list(compound)
-%! ) is det.
+%! vertex_term(+Vs, +V, -VTerm, +Opts) is det.
+%
 % The following options are supported:
-%   * `vertex_color(:ColorFunction)`
-%     A function that assigns colors to vertices.
-%     No default.
-%   * `vertex_id(:ColorFunction)`
+%
+%   * vertex_color(:ColorFunction)
+%
+%     A function that assigns colors to vertices.  No default.
+%
+%   * vertex_id(:ColorFunction)
+%
 %     A functions that assigns unique identifiers to vertices.
-%   * `vertex_image(:ImageFunction)`
-%     A function that assigns images to vertices.
+%
+%   * vertex_image(:ImageFunction)
+%
+%     A function that assigns images to vertices.  No default.
+%
+%   * vertex_label(:LabelFunction)
+%
+%     A function that assigns labels to vertices.  No default.
+%
+%   * vertex_peripheries(:PeripheriesFunction)
+%
+%     A function that assinges peripheries to vertices.  No default.
+%
+%   * vertex_position(:PositionFunction)
+%
 %     No default.
-%   * `vertex_label(:LabelFunction)`
-%     A function that assigns labels to vertices.
-%     No default.
-%   * `vertex_peripheries(:PeripheriesFunction)`
-%     A function that assinges peripheries to vertices.
-%     No default.
-%   * `vertex_position(:PositionFunction)`
-%     No default.
-%   * `vertex_shape(:ShapeFunction)`
-%     A function that assinges shapes to vertices.
-%     No default.
-%   * `vertex_uri(:UriFunction)`
+%
+%   * vertex_shape(:ShapeFunction)
+%
+%     A function that assinges shapes to vertices.  No default.
+%
+%   * vertex_uri(:UriFunction)
 
 vertex_term(Vs, V, vertex(VId,VAttrs), Opts):-
   % Color.
@@ -362,7 +366,7 @@ vertex_term(Vs, V, vertex(VId,VAttrs), Opts):-
 
 % HELPERS %
 
-%! edge_components(+Edge:compound, -FromV, -ToV) is det.
+%! edge_components(+E, -FromV, -ToV) is det.
 
 edge_components(edge(FromV,_,ToV), FromV, ToV):- !.
 edge_components(edge(FromV,ToV), FromV, ToV):- !.
